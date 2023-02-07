@@ -5,7 +5,7 @@ public class Pair<T1, T2> {
 	public T2 B;
 	
 	public Pair(T1 a, T2 b) {
-		A = a;
+		A = a; 
 		B = b;
 	}
 }
