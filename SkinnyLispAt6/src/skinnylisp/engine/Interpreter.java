@@ -9,9 +9,11 @@ import java.util.Scanner;
 import data.Pair;
 import skinnylisp.OutC;
 import skinnylisp.engine.numbercrunch.Operate;
+import skinnylisp.engine.structs.FieldType;
 import skinnylisp.engine.structs.StructureAtom;
 import skinnylisp.engine.structs.StructureField;
 import skinnylisp.exceptions.StructureFieldInvalidEx;
+import skinnylisp.exceptions.StructureParameterUnavailiable;
 import skinnylisp.lexer.atoms.Atom;
 import skinnylisp.lexer.atoms.ListAtom;
 import skinnylisp.lexer.atoms.TokenAtom;
@@ -69,6 +71,46 @@ public class Interpreter {
 				lVars.put("", lA);
 				return run((ListAtom) lA.process, lVars);
 			}
+			if(key instanceof StructureAtom) {
+				StructureAtom the_struct = (StructureAtom) key;
+				if(l.nodes.size() == 1) return the_struct;
+				Atom ret = null;
+				for(int i = 1; i<l.nodes.size(); i++) {
+					Atom internal_token = l.nodes.get(i);
+					String name;
+					if(internal_token instanceof VariableAtom) {
+						VariableAtom as_VariableAtom = (VariableAtom) internal_token;
+						name = as_VariableAtom.name;
+					} else if(internal_token instanceof KeywordAtom) {
+						KeywordAtom as_KeywordAtom = (KeywordAtom) internal_token;
+						name = as_KeywordAtom.keyword;
+					}else {
+						throw new StructureParameterUnavailiable();
+					}
+					
+					StructureField field = null;
+					for(StructureField field_being_checked : the_struct.fields) {
+						if(
+						  field_being_checked.field_name.equals(name) &&
+						  (field_being_checked.field_type == FieldType.Immutable_Global || field_being_checked.field_type == FieldType.Mutable_Global)
+						) {
+							field = field_being_checked;
+							break;
+						}else {
+							//OutC.debug(field_being_checked.field_name);
+						}
+					}
+					
+					if(field == null) {
+						throw new StructureParameterUnavailiable();
+					}
+					ret = field.field_value;
+					if(ret instanceof StructureAtom) {
+						the_struct = (StructureAtom) ret;
+					}
+				}
+				return ret;
+			}
 			return key;
 		} else {
 			ListAtom l = new ListAtom();
@@ -91,7 +133,50 @@ public class Interpreter {
 	private Atom handleKeyword(ListAtom n, HashMap<String, Atom> lVars) throws Exception {
 		switch (((KeywordAtom) n.nodes.get(0)).keyword) {
 		case "set":
-			if (n.nodes.get(1) instanceof VariableAtom) {
+			if (n.nodes.get(1) instanceof ListAtom) {
+				StructureField ret = null;
+				ListAtom internal = (ListAtom) n.nodes.get(1);
+				Atom key = run(internal.nodes.get(0), lVars);
+				//OutC.debug(key);
+				if(key instanceof StructureAtom) {
+					StructureAtom the_struct = (StructureAtom) key;
+					if(internal.nodes.size() == 1) return the_struct;
+					for(int i = 1; i<internal.nodes.size(); i++) {
+						Atom internal_token = internal.nodes.get(i);
+						String name;
+						if(internal_token instanceof VariableAtom) {
+							VariableAtom as_VariableAtom = (VariableAtom) internal_token;
+							name = as_VariableAtom.name;
+						} else if(internal_token instanceof KeywordAtom) {
+							KeywordAtom as_KeywordAtom = (KeywordAtom) internal_token;
+							name = as_KeywordAtom.keyword;
+						}else {
+							throw new StructureParameterUnavailiable();
+						}
+						
+						StructureField field = null;
+						for(StructureField field_being_checked : the_struct.fields) {
+							if(
+							  field_being_checked.field_name.equals(name) &&
+							  (field_being_checked.field_type == FieldType.Immutable_Global || field_being_checked.field_type == FieldType.Mutable_Global)
+							) {
+								
+								field = field_being_checked;
+								break;
+							}
+						}
+						if(field == null) {
+							throw new StructureParameterUnavailiable();
+						}
+						ret = field;
+						if(ret.field_value instanceof StructureAtom) {
+							the_struct = (StructureAtom) ret.field_value;
+						}
+					}
+					if(ret.field_type != FieldType.Mutable_Global) throw new StructureParameterUnavailiable();
+					ret.field_value = run(n.nodes.get(2), lVars);
+				} else throw new StructureParameterUnavailiable();
+			}else if (n.nodes.get(1) instanceof VariableAtom) {
 				vars.put(((VariableAtom) n.nodes.get(1)).name, run(n.nodes.get(2), lVars));
 			}
 			break;

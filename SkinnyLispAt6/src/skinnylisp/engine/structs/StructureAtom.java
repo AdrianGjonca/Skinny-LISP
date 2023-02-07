@@ -15,10 +15,15 @@ public class StructureAtom extends Atom{
 			tabStr+="  ";
 		}
 		String output = "";
-		output += tabStr + "\n#STRUCTURE#\n";
+		output += tabStr + "#STRUCTURE#\n";
 		for(StructureField field : fields) {
-			output += tabStr + "  * " +field.field_name + " - " + field.field_value + "\n";
-			output += tabStr + "  |---->" + field.field_type + "\n";
+			if(field.field_value instanceof StructureAtom) {
+				output += tabStr + "  * " +field.field_name + " INTERNAL STRUCT\n";
+				output += field.field_value.toString(tab+2);
+			}else {
+				output += tabStr + "  * " +field.field_name + " - " + field.field_value + "\n";
+				output += tabStr + "  |---->" + field.field_type + "\n";
+			}
 		}
 		output += tabStr + "###########\n";
 		return output.replace("\n\n", "\n");
