@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import skinnylisp.OutC;
+import skinnylisp.exceptions.StringDataIncomprehensible;
 import skinnylisp.lexer.atoms.Atom;
 import skinnylisp.lexer.atoms.ListAtom;
 import skinnylisp.lexer.atoms.TokenAtom;
@@ -22,7 +23,11 @@ public class Parser {
 			}else if(atom instanceof TokenAtom) {
 				TokenAtom token = (TokenAtom) atom;
 				if(token.text.charAt(0) == '"') {
-					root.nodes.set(index, new StringAtom(token.text));
+					try {
+						root.nodes.set(index, new StringAtom(token.text));
+					} catch (StringDataIncomprehensible e) {
+						e.printStackTrace();
+					}
 				}else if(token.text.charAt(0) == '$') {
 					root.nodes.set(index, new VariableAtom(token.text));
 				}else if(token.text.charAt(0) == '\\') {

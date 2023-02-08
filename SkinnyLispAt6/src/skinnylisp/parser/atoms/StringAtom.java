@@ -1,5 +1,6 @@
 package skinnylisp.parser.atoms;
 
+import skinnylisp.exceptions.StringDataIncomprehensible;
 import skinnylisp.lexer.atoms.Atom;
 
 public class StringAtom extends Atom{
@@ -10,8 +11,25 @@ public class StringAtom extends Atom{
 		this.value = value;
 	}
 	
-	public StringAtom(String value) {
-		this.value = value.substring(1, value.length()-1).replace("\\n", "\n");
+	public StringAtom(String value) throws StringDataIncomprehensible {
+		this.value = toUsable(value.substring(1, value.length()-1));
+	}
+	
+	private String toUsable(String input_str) throws StringDataIncomprehensible {
+		for(int i = 0; i<input_str.length(); i++) {
+			if(input_str.charAt(i) == '\\') {
+				if(input_str.charAt(i+1) == 'n') {
+					return toUsable(input_str.substring(0,i) + '\n' + input_str.substring(i+2));
+				}else if(input_str.charAt(i+1) == '\\') {
+					return toUsable(input_str.substring(0,i)) + '\\' + toUsable(input_str.substring(i+2));
+				}else if(input_str.charAt(i+1) == '\'') {
+					return toUsable(input_str.substring(0,i)) + '"' + toUsable(input_str.substring(i+2));
+				}else throw new StringDataIncomprehensible();
+			}
+					
+		}
+		
+		return input_str;
 	}
 	
 	@Override
