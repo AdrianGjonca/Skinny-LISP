@@ -28,7 +28,7 @@ public class Main {
 			System.out.print("> ");
 			input = scan.nextLine();
 			String out = Precompiler.precomp(input);
-			System.out.println(out);
+			System.out.println("£"+out);
 		} // (set $myFunc | lambda (/n) | do (return | add /n 5))
 	}
 	

@@ -7,8 +7,11 @@ import skinnylisp.OutC;
 
 public class Precompiler {
 	public static String precomp(String unprocessed) {
-		return precomp_BAR(precomp_COLONS(unprocessed));
+		return precomp_EX(
+				precomp_BAR(
+				 precomp_COLONS(unprocessed)));
 	}
+	
 	public static String precomp_COLONS(String unprocessed) {
 		try {
 			char[] chars = unprocessed.toCharArray();
@@ -28,7 +31,6 @@ public class Precompiler {
 						}
 					}
 					String toBracket = unprocessed.substring(start+1, i);
-					//OutC.debug(toBracket);
 					List<String> vals = new LinkedList<String>();
 					int _start = 0;
 					for(int r = 0; r<toBracket.length(); r++) { // (do : a; b; c;) (do : c; "hi;i"; e;)
@@ -49,7 +51,6 @@ public class Precompiler {
 									}
 								}
 								r++;
-								//OutC.debug(toBracket.substring(a,r));
 							}
 							if(toBracket.charAt(r) == '(') {
 								int _level = 1;
@@ -59,10 +60,7 @@ public class Precompiler {
 									if(toBracket.charAt(r) == '(') _level++;
 									if(toBracket.charAt(r) == ')') _level--;
 									r++;
-									
 								}
-								//r++;
-								//OutC.debug(toBracket.substring(a,r));
 							}
 							if(r == toBracket.length()) {
 								r--;
@@ -80,15 +78,6 @@ public class Precompiler {
 					return out + precomp_COLONS(unprocessed.substring(i));
 				};
 			}
-			/*
-			char[] out = unprocessed.toCharArray();
-			for(int i = 0; i<out.length; i++) {
-				if(out[i] == '"') {
-					i++;
-					while(out[i] != '"') i++;
-				}
-				if(out[i] == ';') out[i] = ')';
-			}*/
 			return unprocessed;
 		}catch (ArrayIndexOutOfBoundsException e) {
 			throw new PrecompilerError();
@@ -120,5 +109,35 @@ public class Precompiler {
 		}catch (ArrayIndexOutOfBoundsException e) {
 			throw new PrecompilerError();
 		}
+	}
+	
+	public static String precomp_EX(String unprocessed) {
+		try {
+			boolean in_string = false;
+			for(int i = unprocessed.length()-1; i>=0; i--) {
+				if(unprocessed.charAt(i) == '"') in_string = !in_string;
+				if(!in_string) {
+					if(unprocessed.charAt(i) == '!') {
+						int level = 0;
+						int pos = i-1;
+						while(level >= 0) {
+							if(unprocessed.charAt(pos) == ')') level++;
+							if(unprocessed.charAt(pos) == '(') level--;
+							pos--;
+						}
+						pos+=2;
+						return precomp(
+								unprocessed.substring(0, pos) +
+								"("+unprocessed.substring(pos, i)+")" +
+								unprocessed.substring(i + 1));
+					}
+				}
+			}
+		} catch (ArrayIndexOutOfBoundsException e) {
+			throw new PrecompilerError();
+		} catch (StringIndexOutOfBoundsException e) {
+			throw new PrecompilerError();
+		}
+		return unprocessed;
 	}
 }
