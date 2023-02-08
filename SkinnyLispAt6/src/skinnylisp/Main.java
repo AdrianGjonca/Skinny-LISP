@@ -7,6 +7,7 @@ import java.util.Scanner;
 import java.util.function.Function;
 
 import skinnylisp.engine.Interpreter;
+import skinnylisp.entrypoints.REPL;
 import skinnylisp.exceptions.CodeInvalidEx;
 import skinnylisp.exceptions.UnknownFunctionEx;
 import skinnylisp.lexer.atoms.Atom;
@@ -17,7 +18,7 @@ import skinnylisp.precompiler.Precompiler;
 public class Main {
 	
 	public static void main(String [] args) {
-		loadFile();
+		repl();
 	}
 	
 	public static void precompDebug() {
@@ -70,26 +71,10 @@ public class Main {
 	}
 	
 	public static void repl() {
-		Scanner scan = new Scanner(System.in);
-		String input = "";
-		Interpreter inter = new Interpreter();
-		while(!input.equals(":q")) {
-			System.out.print("> ");
-			input = Precompiler.precomp(scan.nextLine());
-			ListAtom n = null;
-			try {
-				n = new ListAtom(input);
-				n = Parser.parse(n);
-			} catch (CodeInvalidEx e) {
-				System.out.println("Code invalid");
-			}
-			
-			//System.out.println(n);
-			try {
-				System.out.println(inter.run(n));
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+		REPL repl = new REPL(System.out, new Scanner(System.in));
+		repl.displayTitle();
+		while(true) {
+			repl.line();
 		}
 	}
 }
