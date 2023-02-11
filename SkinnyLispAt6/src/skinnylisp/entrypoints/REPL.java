@@ -50,7 +50,7 @@ public class REPL {
 		input_buffer = scanner.nextLine();
 		
 		while(!isCompleteStatement(input_buffer)) {
-			System.out.print("* ");
+			System.out.print("  ");
 			input_buffer += scanner.nextLine();
 		}
 		

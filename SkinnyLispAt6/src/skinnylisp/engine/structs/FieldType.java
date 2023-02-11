@@ -1,9 +1,7 @@
 package skinnylisp.engine.structs;
 
 public enum FieldType {
-	Mutable_Global,
-	Mutable_Hidden,
+	Mutable,
 	
-	Immutable_Global,
-	Immutable_Hidden,
+	Immutable,
 }

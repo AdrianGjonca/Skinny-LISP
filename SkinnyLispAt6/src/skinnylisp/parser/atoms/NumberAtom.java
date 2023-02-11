@@ -43,6 +43,11 @@ public class NumberAtom extends Atom {
 		this.type = NumberType.FLOAT;
 	}
 	
+	public String convertToString() {
+		if(type == NumberType.FLOAT) return (Double.longBitsToDouble(rawData) + "");
+		else return ((long) rawData + "");
+	}
+	
 	@Override
 	public String toString(int tab) {
 		String tabStr = "";

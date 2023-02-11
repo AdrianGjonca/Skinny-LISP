@@ -26,6 +26,7 @@ import skinnylisp.parser.atoms.LambdaVariableAtom;
 import skinnylisp.parser.atoms.NumberAtom;
 import skinnylisp.parser.atoms.StringAtom;
 import skinnylisp.parser.atoms.VariableAtom;
+import skinnylisp.parser.atoms.numtypes.NumberType;
 import skinnylisp.precompiler.Precompiler;
 
 public class Interpreter {
@@ -97,8 +98,8 @@ public class Interpreter {
 					StructureField field = null;
 					for (StructureField field_being_checked : head_as_StructureAtom.fields) {
 						if (field_being_checked.field_name.equals(name)
-								&& (field_being_checked.field_type == FieldType.Immutable_Global
-										|| field_being_checked.field_type == FieldType.Mutable_Global)) {
+								&& (field_being_checked.field_type == FieldType.Immutable
+										|| field_being_checked.field_type == FieldType.Mutable)) {
 							field = field_being_checked;
 							break;
 						} else {
@@ -144,6 +145,12 @@ public class Interpreter {
 		 * 
 		 */
 		switch (((KeywordAtom) in_ListAtom.nodes.get(0)).keyword) {
+		/*
+		 * 
+		 * DATA AND FUNCTIONS
+		 * 
+		 * 
+		 */
 		case "set":
 			if (in_ListAtom.nodes.get(1) instanceof ListAtom) {
 				StructureField field_to_edit = null;
@@ -179,8 +186,8 @@ public class Interpreter {
 						StructureField the_field_sofar_referenced = null;
 						for (StructureField field_being_checked : the_struct_we_on.fields)
 							if (field_being_checked.field_name.equals(name_of_this_token)
-									&& (field_being_checked.field_type == FieldType.Immutable_Global
-											|| field_being_checked.field_type == FieldType.Mutable_Global)) {
+									&& (field_being_checked.field_type == FieldType.Immutable
+											|| field_being_checked.field_type == FieldType.Mutable)) {
 
 								the_field_sofar_referenced = field_being_checked;
 								break;
@@ -196,7 +203,7 @@ public class Interpreter {
 						}
 					}
 
-					if (field_to_edit.field_type != FieldType.Mutable_Global)
+					if (field_to_edit.field_type != FieldType.Mutable)
 						throw new SRE_FieldIsNotAccessibleInThisContext();
 					/*
 					 * The final SET!
@@ -245,6 +252,16 @@ public class Interpreter {
 		 * 
 		 * 
 		 */
+		case "to-str":
+			if (in_ListAtom.nodes.size() == 2) {
+				Object o = run(in_ListAtom.nodes.get(1), lambda_vars);
+				if (o instanceof NumberAtom) {
+					return new StringAtom(((NumberAtom)o).convertToString(), 0);
+				} else if (o instanceof StringAtom) {
+					return (Atom) o;
+					
+				}else throw new ParametersIncorectEx();
+			} throw new ParametersIncorectEx();
 		case "parse-int":
 			if (in_ListAtom.nodes.size() == 2) {
 				Object o = run(in_ListAtom.nodes.get(1), lambda_vars);
@@ -285,7 +302,10 @@ public class Interpreter {
 						out += ((StringAtom) text).value;
 					} else if (text instanceof NumberAtom) {
 						out += ((NumberAtom) text).getValue();
-					} else throw new ParametersIncorectEx();
+					} else {
+						OutC.debug(text);
+						throw new ParametersIncorectEx();
+					}
 				}
 				System.out.println(out);
 			} break;
@@ -376,7 +396,116 @@ public class Interpreter {
 					return (NumberAtom) in_ListAtom.nodes.get(1);
 				} else throw new ParametersIncorectEx();
 			} throw new ParametersIncorectEx();
-
+		case "^":
+			if (in_ListAtom.nodes.size() == 3) {
+				Atom base = run(in_ListAtom.nodes.get(1), lambda_vars);
+				if (!(base instanceof NumberAtom)) throw new ParametersIncorectEx();
+				Atom exponent = run(in_ListAtom.nodes.get(2), lambda_vars);
+				if (!(exponent instanceof NumberAtom)) throw new ParametersIncorectEx();
+				
+				return Operate.pow((NumberAtom) base, (NumberAtom) exponent);
+			} else throw new ParametersIncorectEx();
+		case "log":
+			if (in_ListAtom.nodes.size() == 2) {
+				Atom value = run(in_ListAtom.nodes.get(1), lambda_vars);
+				if (!(value instanceof NumberAtom)) throw new ParametersIncorectEx();
+				
+				return Operate.log((NumberAtom) value);
+			} else throw new ParametersIncorectEx();
+		//
+		//iDiv
+		//
+		case "mod":
+			if (in_ListAtom.nodes.size() == 3) {
+				Atom base = run(in_ListAtom.nodes.get(1), lambda_vars);
+				if (!(base instanceof NumberAtom)) throw new ParametersIncorectEx();
+				Atom exponent = run(in_ListAtom.nodes.get(2), lambda_vars);
+				if (!(exponent instanceof NumberAtom)) throw new ParametersIncorectEx();
+				
+				return Operate.mod((NumberAtom) base, (NumberAtom) exponent);
+			} else throw new ParametersIncorectEx();
+		case "round":
+			if (in_ListAtom.nodes.size() == 2) {
+				Atom value = run(in_ListAtom.nodes.get(1), lambda_vars);
+				if (!(value instanceof NumberAtom)) throw new ParametersIncorectEx();
+				
+				return Operate.round((NumberAtom) value);
+			} else throw new ParametersIncorectEx();
+		case "floor":
+			if (in_ListAtom.nodes.size() == 2) {
+				Atom value = run(in_ListAtom.nodes.get(1), lambda_vars);
+				if (!(value instanceof NumberAtom)) throw new ParametersIncorectEx();
+				
+				return Operate.floor((NumberAtom) value);
+			} else throw new ParametersIncorectEx();
+		case "ceil":
+			if (in_ListAtom.nodes.size() == 2) {
+				Atom value = run(in_ListAtom.nodes.get(1), lambda_vars);
+				if (!(value instanceof NumberAtom)) throw new ParametersIncorectEx();
+				
+				return Operate.ceil((NumberAtom) value);
+			} else throw new ParametersIncorectEx();
+		case "as-int":
+			if (in_ListAtom.nodes.size() == 2) {
+				Atom value = run(in_ListAtom.nodes.get(1), lambda_vars);
+				if (!(value instanceof NumberAtom)) throw new ParametersIncorectEx();
+				NumberAtom value_as_NumberAtom = (NumberAtom) value;
+				if(value_as_NumberAtom.type==NumberType.INTEGER) return value_as_NumberAtom;
+				else return new NumberAtom((long)Double.longBitsToDouble(value_as_NumberAtom.rawData));
+			} else throw new ParametersIncorectEx();
+		case "as-float":
+			if (in_ListAtom.nodes.size() == 2) {
+				Atom value = run(in_ListAtom.nodes.get(1), lambda_vars);
+				if (!(value instanceof NumberAtom)) throw new ParametersIncorectEx();
+				NumberAtom value_as_NumberAtom = (NumberAtom) value;
+				if(value_as_NumberAtom.type==NumberType.FLOAT) return value_as_NumberAtom;
+				else return new NumberAtom((double) value_as_NumberAtom.rawData);
+			} else throw new ParametersIncorectEx();
+		//
+		//TRIG
+		//
+		case "sin":
+			if (in_ListAtom.nodes.size() == 2) {
+				Atom value = run(in_ListAtom.nodes.get(1), lambda_vars);
+				if (!(value instanceof NumberAtom)) throw new ParametersIncorectEx();
+				
+				return Operate.sin((NumberAtom) value);
+			} else throw new ParametersIncorectEx();
+		case "cos":
+			if (in_ListAtom.nodes.size() == 2) {
+				Atom value = run(in_ListAtom.nodes.get(1), lambda_vars);
+				if (!(value instanceof NumberAtom)) throw new ParametersIncorectEx();
+				
+				return Operate.cos((NumberAtom) value);
+			} else throw new ParametersIncorectEx();
+		case "tan":
+			if (in_ListAtom.nodes.size() == 2) {
+				Atom value = run(in_ListAtom.nodes.get(1), lambda_vars);
+				if (!(value instanceof NumberAtom)) throw new ParametersIncorectEx();
+				
+				return Operate.tan((NumberAtom) value);
+			} else throw new ParametersIncorectEx();
+		case "asin":
+			if (in_ListAtom.nodes.size() == 2) {
+				Atom value = run(in_ListAtom.nodes.get(1), lambda_vars);
+				if (!(value instanceof NumberAtom)) throw new ParametersIncorectEx();
+				
+				return Operate.asin((NumberAtom) value);
+			} else throw new ParametersIncorectEx();
+		case "acos":
+			if (in_ListAtom.nodes.size() == 2) {
+				Atom value = run(in_ListAtom.nodes.get(1), lambda_vars);
+				if (!(value instanceof NumberAtom)) throw new ParametersIncorectEx();
+				
+				return Operate.acos((NumberAtom) value);
+			} else throw new ParametersIncorectEx();
+		case "atan":
+			if (in_ListAtom.nodes.size() == 2) {
+				Atom value = run(in_ListAtom.nodes.get(1), lambda_vars);
+				if (!(value instanceof NumberAtom)) throw new ParametersIncorectEx();
+				
+				return Operate.atan((NumberAtom) value);
+			} else throw new ParametersIncorectEx();
 		/*
 		 * 
 		 * BOOLEAN LOGIC FUNCTIONS
@@ -533,13 +662,18 @@ public class Interpreter {
 									return inter.run(statement_we_on.nodes.get(1), lambda_vars);
 								else
 									return null;
+							}else {
+								Atom internal = inter.run(statement_we_on, lambda_vars);
 							}
 						} else {
 							Atom internal = inter.run(statement_we_on, lambda_vars);
 						}
 					} else throw new ParametersIncorectEx();
 				}
-			} throw new ParametersIncorectEx();
+			} else {
+				System.out.println(in_ListAtom.nodes.size() );
+				throw new ParametersIncorectEx();
+			} break;
 		case "then":
 			for (int i = 1; i < in_ListAtom.nodes.size(); i++) {
 				if (in_ListAtom.nodes.get(i) instanceof ListAtom) {
@@ -552,14 +686,16 @@ public class Interpreter {
 						if (statement_head.keyword.equals("return")) {
 							if (statement_we_on.nodes.size() > 1)
 								return run(statement_we_on.nodes.get(1), lambda_vars);
-							else
+							else 
 								return null;
+						}else {
+							Atom internal = run(statement_we_on, lambda_vars);
 						}
 					}else {
 						Atom internal = run(statement_we_on, lambda_vars);
 					}
-				}
-			} throw new ParametersIncorectEx();
+				} else throw new ParametersIncorectEx();
+			} return null;
 		case "if":
 			for (int i = 0; i < in_ListAtom.nodes.size(); i += 3) {
 				if (in_ListAtom.nodes.get(i) instanceof KeywordAtom) {
