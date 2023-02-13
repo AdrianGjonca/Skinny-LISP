@@ -8,6 +8,9 @@ import java.util.Scanner;
 
 import data.Pair;
 import skinnylisp.OutC;
+import skinnylisp.engine.lists.DataListAtom;
+import skinnylisp.engine.lists.DataListQuestionError;
+import skinnylisp.engine.lists.ListType;
 import skinnylisp.engine.numbercrunch.Operate;
 import skinnylisp.engine.structs.FieldType;
 import skinnylisp.engine.structs.StructureAtom;
@@ -117,6 +120,72 @@ public class Interpreter {
 				}
 				return return_value;
 			}
+			if(head_of_list instanceof DataListAtom) {
+				DataListAtom head_as_DataListAtom = (DataListAtom) head_of_list;
+				if(in_as_ListAtom.nodes.size() == 1)
+					return head_as_DataListAtom;
+				if(in_as_ListAtom.nodes.size() == 2) {
+					Atom second_node = in_as_ListAtom.nodes.get(1);
+					if(second_node instanceof KeywordAtom) {
+						KeywordAtom second_node_as_KeywordAtom = (KeywordAtom) second_node;
+						if(second_node_as_KeywordAtom.keyword.equals("size")) {
+							return new NumberAtom(head_as_DataListAtom.list.size());
+						}else throw new DataListQuestionError();
+					}else {
+						second_node = run(second_node, lambda_vars);
+						if(second_node instanceof NumberAtom) {
+							NumberAtom second_node_As_NumberAtom = (NumberAtom) second_node;
+							if(second_node_As_NumberAtom.type == NumberType.INTEGER) {
+								if(second_node_As_NumberAtom.rawData >= 0 &&
+								   second_node_As_NumberAtom.rawData < head_as_DataListAtom.list.size())
+									return head_as_DataListAtom.list.get((int) second_node_As_NumberAtom.rawData);
+								else throw new DataListQuestionError();
+							}else throw new DataListQuestionError();
+						}
+					}
+				} else if(in_as_ListAtom.nodes.size() == 3) {
+					Atom second_node = in_as_ListAtom.nodes.get(1);
+					Atom third_node = in_as_ListAtom.nodes.get(2);
+					if(second_node instanceof KeywordAtom) {
+						third_node = run(third_node, lambda_vars);
+						if(((KeywordAtom)second_node).keyword.equals("append")) {
+							List<Atom> the_list = head_as_DataListAtom.list;
+							the_list.add(third_node);
+						} else if(((KeywordAtom)second_node).keyword.equals("remove")) {
+							if(third_node instanceof NumberAtom) {
+								if(((NumberAtom)third_node).type == NumberType.INTEGER) {
+									int index = (int) ((NumberAtom)third_node).rawData;
+									List<Atom> the_list = head_as_DataListAtom.list;
+									
+									if(index >= the_list.size() || index < 0) throw new DataListQuestionError();
+									
+									the_list.remove(index);
+								} else throw new DataListQuestionError();
+							} else throw new DataListQuestionError();
+						} else throw new DataListQuestionError();
+					} else throw new DataListQuestionError();
+				} else if(in_as_ListAtom.nodes.size() == 4) {
+					Atom second_node = in_as_ListAtom.nodes.get(1);
+					Atom third_node = in_as_ListAtom.nodes.get(2);
+					Atom fourth_node = in_as_ListAtom.nodes.get(3);
+					if(second_node instanceof KeywordAtom) {
+						third_node = run(third_node, lambda_vars);
+						fourth_node = run(fourth_node, lambda_vars);
+						if(((KeywordAtom)second_node).keyword.equals("set")) {
+							if(third_node instanceof NumberAtom) {
+								if(((NumberAtom)third_node).type == NumberType.INTEGER) {
+									int index = (int) ((NumberAtom)third_node).rawData;
+									List<Atom> the_list = head_as_DataListAtom.list;
+									
+									if(index >= the_list.size() || index < 0) throw new DataListQuestionError();
+									
+									the_list.set(index, fourth_node);
+								} else throw new DataListQuestionError();
+							} else throw new DataListQuestionError();
+						} else throw new DataListQuestionError();
+					}else throw new DataListQuestionError();
+				}else throw new DataListQuestionError();
+			}
 			return head_of_list;
 		} else {
 			ListAtom onwards_list = new ListAtom();
@@ -208,13 +277,17 @@ public class Interpreter {
 					/*
 					 * The final SET!
 					 */
-					field_to_edit.field_value = run(in_ListAtom.nodes.get(2), lambda_vars);
+					Atom the_return = run(in_ListAtom.nodes.get(2), lambda_vars);
+					field_to_edit.field_value = run(the_return, lambda_vars);
+					return the_return;
 					// Ah
 				} else
 					throw new SRE_TokenTypeNotValid();
 			} else if (in_ListAtom.nodes.get(1) instanceof VariableAtom) {
+				Atom the_return = run(in_ListAtom.nodes.get(2), lambda_vars);
 				variables_map.put(((VariableAtom) in_ListAtom.nodes.get(1)).name,
-						run(in_ListAtom.nodes.get(2), lambda_vars));
+						the_return);
+				return the_return;
 			}
 			break;
 		case "lambda":
@@ -227,6 +300,24 @@ public class Interpreter {
 					function = (ListAtom) function.nodes.get(0);
 				return new LambdaAtom(listof_lambda_vars, function);
 			} else throw new ParametersIncorectEx();
+		case "list":
+			if(true) {
+				DataListAtom the_return = new DataListAtom(ListType.LinkedList);
+				
+				for(int index = 1; index < in_ListAtom.nodes.size(); index++) {
+					the_return.list.add(run(in_ListAtom.nodes.get(index), lambda_vars));
+				}
+				return the_return;
+			}
+		case "array":
+			if(true) {
+				DataListAtom the_return = new DataListAtom(ListType.ArrayList);
+				
+				for(int index = 1; index < in_ListAtom.nodes.size(); index++) {
+					the_return.list.add(run(in_ListAtom.nodes.get(index), lambda_vars));
+				}
+				return the_return;
+			}
 		case "structure":
 			if (in_ListAtom.nodes.size() != 2) throw new ParametersIncorectEx();
 			
