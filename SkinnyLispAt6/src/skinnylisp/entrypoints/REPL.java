@@ -19,6 +19,24 @@ public class REPL {
 		this.interpreter = new Interpreter();
 	}
 	
+	public void exec(String code) {
+		code = Precompiler.precomp(code);
+		
+		ListAtom abstract_syntax_tree = null;
+		try {
+			abstract_syntax_tree = new ListAtom(code);
+			abstract_syntax_tree = Parser.parse(abstract_syntax_tree);
+		} catch (CodeInvalidEx e) {
+			print_stream.println("Code invalid");
+		}
+		
+		try {
+			print_stream.println(interpreter.run(abstract_syntax_tree));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public void line() {
 		String code = takeInput();
 		code = Precompiler.precomp(code);

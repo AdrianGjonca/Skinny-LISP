@@ -18,7 +18,7 @@ import skinnylisp.precompiler.Precompiler;
 public class Main {
 	
 	public static void main(String [] args) {
-		repl();
+		loadFile();
 	}
 	
 	public static void precompDebug() {
@@ -48,26 +48,12 @@ public class Main {
 			e.printStackTrace();
 		}
 		
-		Interpreter inter = new Interpreter();
-		ListAtom n = null;
-		try {
-			//OutC.debug(Precompiler.precomp(code).replace("\n\n", "\n").replace("\n\n", "\n"));
-			n = new ListAtom(Precompiler.precomp(code));
-		} catch (CodeInvalidEx e) {
-			e.printStackTrace();
+		REPL repl = new REPL(System.out, new Scanner(System.in));
+		repl.exec(code);
+		repl.displayTitle();
+		while(true) {
+			repl.line();
 		}
-		n = Parser.parse(n);
-		System.out.println("\u001b[0m");
-		long start = System.nanoTime();
-		try{
-			Object o = inter.run(n);
-		}catch(java.lang.StackOverflowError e) {
-			OutC.error("StackOverflow");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		System.out.println();
-		//System.out.print("Elapsed " + (double)(System.nanoTime() - start) / (1E9) + "s");
 	}
 	
 	public static void repl() {

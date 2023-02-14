@@ -206,6 +206,7 @@ public class Interpreter {
 		return handleKeyword(in_ListAtom, NULL_LAMBDA_VARS);
 	}
 
+	@SuppressWarnings("unchecked")
 	private Atom handleKeyword(ListAtom in_ListAtom, HashMap<String, Atom> lambda_vars) throws Exception {
 		/*
 		 * MASSIVE SWITCH STATEMENT INCOMING
@@ -682,8 +683,9 @@ public class Interpreter {
 					if (internal instanceof NumberAtom) {
 						if (!((NumberAtom) internal).isTrue())
 							return new NumberAtom(0);
-					}else throw new ParametersIncorectEx();
-
+					}else if(internal != null) {
+						throw new ParametersIncorectEx();
+					}
 				}
 				return new NumberAtom(1);
 			} else throw new ParametersIncorectEx();
@@ -743,9 +745,7 @@ public class Interpreter {
 				for (int i = 1; i < in_ListAtom.nodes.size(); i++) {
 					if (in_ListAtom.nodes.get(i) instanceof ListAtom) {
 						ListAtom statement_we_on = (ListAtom) in_ListAtom.nodes.get(i);
-						if (statement_we_on.nodes.size() == 0) 
-							throw new ParametersIncorectEx();
-						
+						if (statement_we_on.nodes.size() != 0) 
 						if (statement_we_on.nodes.get(0) instanceof KeywordAtom) {
 							KeywordAtom k = (KeywordAtom) statement_we_on.nodes.get(0);
 							if (k.keyword.equals("return")) {
@@ -761,30 +761,49 @@ public class Interpreter {
 						}
 					} else throw new ParametersIncorectEx();
 				}
-			} else {
-				System.out.println(in_ListAtom.nodes.size() );
-				throw new ParametersIncorectEx();
-			} break;
+			} else throw new ParametersIncorectEx();
+		case "hide":
+			if (in_ListAtom.nodes.size() >= 2) {
+				Interpreter inter = new Interpreter();
+				inter.variables_map = (HashMap<String, Atom>) this.variables_map.clone();
+				for (int i = 1; i < in_ListAtom.nodes.size(); i++) {
+					if (in_ListAtom.nodes.get(i) instanceof ListAtom) {
+						ListAtom statement_we_on = (ListAtom) in_ListAtom.nodes.get(i);
+						if (statement_we_on.nodes.size() != 0) 
+						if (statement_we_on.nodes.get(0) instanceof KeywordAtom) {
+							KeywordAtom k = (KeywordAtom) statement_we_on.nodes.get(0);
+							if (k.keyword.equals("return")) {
+								if (statement_we_on.nodes.size() > 1)
+									return inter.run(statement_we_on.nodes.get(1), lambda_vars);
+								else
+									return null;
+							}else {
+								Atom internal = inter.run(statement_we_on, lambda_vars);
+							}
+						} else {
+							Atom internal = inter.run(statement_we_on, lambda_vars);
+						}
+					} else throw new ParametersIncorectEx();
+				}
+			} else throw new ParametersIncorectEx();
 		case "then":
 			for (int i = 1; i < in_ListAtom.nodes.size(); i++) {
 				if (in_ListAtom.nodes.get(i) instanceof ListAtom) {
 					ListAtom statement_we_on = (ListAtom) in_ListAtom.nodes.get(i);
-					if (statement_we_on.nodes.size() == 0) 
-						throw new ParametersIncorectEx();
-					
-					if (statement_we_on.nodes.get(0) instanceof KeywordAtom) {
-						KeywordAtom statement_head = (KeywordAtom) statement_we_on.nodes.get(0);
-						if (statement_head.keyword.equals("return")) {
-							if (statement_we_on.nodes.size() > 1)
-								return run(statement_we_on.nodes.get(1), lambda_vars);
-							else 
-								return null;
-						}else {
+					if (statement_we_on.nodes.size() != 0) 
+						if (statement_we_on.nodes.get(0) instanceof KeywordAtom) {
+							KeywordAtom k = (KeywordAtom) statement_we_on.nodes.get(0);
+							if (k.keyword.equals("return")) {
+								if (statement_we_on.nodes.size() > 1)
+									return run(statement_we_on.nodes.get(1), lambda_vars);
+								else
+									return null;
+							}else {
+								Atom internal = run(statement_we_on, lambda_vars);
+							}
+						} else {
 							Atom internal = run(statement_we_on, lambda_vars);
 						}
-					}else {
-						Atom internal = run(statement_we_on, lambda_vars);
-					}
 				} else throw new ParametersIncorectEx();
 			} return null;
 		case "if":
@@ -796,7 +815,10 @@ public class Interpreter {
 						if (condition_atom instanceof NumberAtom) {
 							if (((NumberAtom) condition_atom).isTrue())
 								return run(in_ListAtom.nodes.get(i + 2), lambda_vars);
-						} else throw new ParametersIncorectEx();
+						} else {
+							OutC.debug(condition_atom);
+							throw new ParametersIncorectEx();
+						}
 					} else if (keyword_atom.keyword.equals("else")) {
 						return run(in_ListAtom.nodes.get(i + 1), lambda_vars);
 					} else throw new ParametersIncorectEx();
