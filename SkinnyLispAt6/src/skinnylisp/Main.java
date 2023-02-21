@@ -9,7 +9,6 @@ import java.util.function.Function;
 import skinnylisp.engine.Interpreter;
 import skinnylisp.entrypoints.REPL;
 import skinnylisp.exceptions.CodeInvalidEx;
-import skinnylisp.exceptions.UnknownFunctionEx;
 import skinnylisp.lexer.atoms.Atom;
 import skinnylisp.lexer.atoms.ListAtom;
 import skinnylisp.parser.Parser;
@@ -18,7 +17,7 @@ import skinnylisp.precompiler.Precompiler;
 public class Main {
 	
 	public static void main(String [] args) {
-		loadFile();
+		repl();
 	}
 	
 	public static void precompDebug() {

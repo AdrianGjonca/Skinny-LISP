@@ -5,6 +5,7 @@ import java.util.Scanner;
 
 import skinnylisp.engine.Interpreter;
 import skinnylisp.exceptions.CodeInvalidEx;
+import skinnylisp.exceptions.LispRuntimeError;
 import skinnylisp.lexer.atoms.ListAtom;
 import skinnylisp.parser.Parser;
 import skinnylisp.precompiler.Precompiler;
@@ -19,9 +20,7 @@ public class REPL {
 		this.interpreter = new Interpreter();
 	}
 	
-	public void exec(String code) {
-		code = Precompiler.precomp(code);
-		
+	public void doIt(String code) {
 		ListAtom abstract_syntax_tree = null;
 		try {
 			abstract_syntax_tree = new ListAtom(code);
@@ -32,28 +31,22 @@ public class REPL {
 		
 		try {
 			print_stream.println(interpreter.run(abstract_syntax_tree));
-		} catch (Exception e) {
-			e.printStackTrace();
+		} catch (LispRuntimeError e) {
+			print_stream.println("ERROR \n    " + e.error.getErrorMessage().replace("\n", "\n    ") + "\n" + "END ERROR");
 		}
+	}
+	
+	public void exec(String code) {
+		code = Precompiler.precomp(code);
+		
+		doIt(code);
 	}
 	
 	public void line() {
 		String code = takeInput();
 		code = Precompiler.precomp(code);
 		
-		ListAtom abstract_syntax_tree = null;
-		try {
-			abstract_syntax_tree = new ListAtom(code);
-			abstract_syntax_tree = Parser.parse(abstract_syntax_tree);
-		} catch (CodeInvalidEx e) {
-			print_stream.println("Code invalid");
-		}
-		
-		try {
-			print_stream.println(interpreter.run(abstract_syntax_tree));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		doIt(code);
 	}
 	
 	public void displayTitle() {

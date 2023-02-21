@@ -4,7 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import skinnylisp.OutC;
-import skinnylisp.exceptions.StringDataIncomprehensible;
+import skinnylisp.exceptions.CodeInvalidEx;
 import skinnylisp.lexer.atoms.Atom;
 import skinnylisp.lexer.atoms.ListAtom;
 import skinnylisp.lexer.atoms.TokenAtom;
@@ -25,7 +25,7 @@ public class Parser {
 				if(token.text.charAt(0) == '"') {
 					try {
 						root.nodes.set(index, new StringAtom(token.text));
-					} catch (StringDataIncomprehensible e) {
+					} catch (CodeInvalidEx e) {
 						e.printStackTrace();
 					}
 				}else if(token.text.charAt(0) == '$') {
