@@ -75,7 +75,12 @@ public class Interpreter {
 
 				int index_on_nodes = 1;
 				for (String par : head_as_LambdaAtom.params) {
-					lambda_vars_to_pass_on.put(par, run(in_as_ListAtom.nodes.get(index_on_nodes), lambda_vars));
+					Atom n;
+					n = (head_as_LambdaAtom.types.get(index_on_nodes-1) == LispType.Expression) ? in_as_ListAtom.nodes.get(index_on_nodes)
+							 																  : run(in_as_ListAtom.nodes.get(index_on_nodes), lambda_vars);
+					Class atom_class = head_as_LambdaAtom.types.get(index_on_nodes-1).atom_class;
+					if(!(atom_class.isInstance(n))) throw error_arg("~~");
+					else lambda_vars_to_pass_on.put(par, n);
 					index_on_nodes++;
 				}
 				lambda_vars_to_pass_on.put("", head_as_LambdaAtom);
@@ -554,7 +559,7 @@ public class Interpreter {
 						}
 					}
 				}
-			}
+			} break;
 		case "if":
 			for (int i = 0; i < in_ListAtom.nodes.size(); i += 3) {
 				try {
@@ -629,15 +634,15 @@ public class Interpreter {
 	 * UTILITIES
 	 * 
 	 */
-	private static LispRuntimeError error(LispError error){
+	public static LispRuntimeError error(LispError error){
 		return new LispRuntimeError(error);
 	}
 	
-	private static LispRuntimeError error() {
+	public static LispRuntimeError error() {
 		return new LispRuntimeError();
 	}
 	
-	private static LispRuntimeError error_arg(String e) {
+	public static LispRuntimeError error_arg(String e) {
 		return new LispRuntimeError(new Err_IncorrectArgs(e));
 	}
 

@@ -32,6 +32,7 @@ public class REPL {
 		try {
 			print_stream.println(interpreter.run(abstract_syntax_tree));
 		} catch (LispRuntimeError e) {
+			e.printStackTrace();
 			print_stream.println("ERROR \n    " + e.error.getErrorMessage().replace("\n", "\n    ") + "\n" + "END ERROR");
 		}
 	}
