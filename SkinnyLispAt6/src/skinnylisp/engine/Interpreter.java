@@ -321,10 +321,57 @@ public class Interpreter {
 			}
 		/*
 		 * 
-		 * STRINGS
+		 * TYPES
 		 * 
 		 * 
 		 */
+		case "is-null":
+			if (in_ListAtom.nodes.size() != 2)
+				throw error_arg(("!(is-null ?[Any])"));
+			else {
+				Object check = run(in_ListAtom.nodes.get(1), lambda_vars);
+				return (check == null) ? new NumberAtom(1)
+									   : new NumberAtom(0);
+			}
+		case "is-type":
+			if (in_ListAtom.nodes.size() < 3)
+				throw error_arg(("!(is-type ?[Any] ?[Type as Keyword]...)"));
+			else {
+				Object check = run(in_ListAtom.nodes.get(1), lambda_vars);
+				List<LispType> types = new LinkedList<LispType>();
+				for(int n = 2; n<in_ListAtom.nodes.size(); n++) {
+					if(!(in_ListAtom.nodes.get(n) instanceof KeywordAtom)) throw error_arg("(is-type [Any] ![Type as Keyword]...)");
+					String name = ((KeywordAtom) in_ListAtom.nodes.get(n)).keyword;
+					boolean success = false;
+					for(LispType r : LispType.values()) {
+						if(name.equals(r.name)) {
+							types.add(r);
+							success = true;
+							break;
+						}
+					}
+					if(!success) throw Interpreter.error_arg("is-type: " +name + " is not a valid type");
+				}
+				
+				for(LispType t : types) {
+					if(t.atom_class.isInstance(check)) {
+						if(t.atom_class == NumberAtom.class) {
+							switch(t) {
+							case Integer:
+								if(((NumberAtom) check).type == NumberType.INTEGER) return new NumberAtom(1);
+								break;
+							case Float:
+								if(((NumberAtom) check).type == NumberType.FLOAT) return new NumberAtom(1);
+								break;
+							default:
+								return new NumberAtom(1);
+							}
+						}else {
+							return new NumberAtom(1);
+						}
+					}
+				} return new NumberAtom(0);
+			} 
 		case "to-str":
 			if (in_ListAtom.nodes.size() != 2)
 				throw error_arg(("!(to-str ?[Integer | Float | String])"));
@@ -364,6 +411,12 @@ public class Interpreter {
 					return new NumberAtom(Integer.parseInt(atom.value));
 				} else throw error_arg(("(to-float ![Integer | Float | String])"));
 			}
+		/*
+		 * 
+		 * STRINGS
+		 * 
+		 * 
+		 */
 		case "input":
 			if (in_ListAtom.nodes.size() != 2 &&
 				in_ListAtom.nodes.size() != 1) throw error_arg(("!(input ?[String | NumberAtom | Void])"));
