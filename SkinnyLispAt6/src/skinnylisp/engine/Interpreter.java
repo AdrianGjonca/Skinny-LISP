@@ -66,7 +66,59 @@ public class Interpreter {
 					throw error(new Err_Undefined(((VariableAtom) head_of_list).name , AtomType.Variable));
 				head_of_list = variables_map.get(((VariableAtom) head_of_list).name);
 			}
-
+			
+			if (head_of_list instanceof NumberAtom) {
+				if(in_as_ListAtom.nodes.size() == 1) return head_of_list;
+				else {
+					String opperation = "+";
+					NumberAtom running_value = (NumberAtom) head_of_list;
+					List<NumberAtom> nums = new LinkedList<NumberAtom>();
+					nums.add(running_value);
+					int size = in_as_ListAtom.nodes.size();
+					
+					for(int i = 1; i<size; i++) {
+						Atom atom = in_as_ListAtom.nodes.get(i); 
+						if(atom instanceof KeywordAtom) {
+							running_value = (opperation.equals("+"))  ? Operate.sum(nums)  			  :
+					   						(opperation.equals("-"))  ? Operate.sub(nums)   		  :
+					   						(opperation.equals("*"))  ? Operate.prod(nums) 			  :
+					   						(opperation.equals("/"))  ? Operate.div(nums)  			  :
+					   						(opperation.equals("%"))  ? Operate.mod(nums)  			  :
+					   						(opperation.equals("^"))  ? Operate.pow(nums)  			  :
+					   						(opperation.equals("="))  ? Operate.equal(nums)           :
+					   						(opperation.equals(">"))  ? Operate.greaterThan(nums)     :
+					   						(opperation.equals("<"))  ? Operate.lessThan(nums)        :
+					   						(opperation.equals(">=")) ? Operate.greaterThanOrEQ(nums) :
+					   						(opperation.equals("<=")) ? Operate.lessThanOrEQ(nums)    : null;   
+							if(running_value == null) throw error_arg(opperation + " is an invalid numerical operation");
+							opperation = ((KeywordAtom) atom).keyword;
+							nums = new LinkedList<NumberAtom>();
+							nums.add(running_value);
+						}else {
+							atom = run(atom, lambda_vars);
+							if(atom instanceof NumberAtom) {
+								nums.add((NumberAtom) atom);
+							}else throw error_arg("On mathamatical opperation: ![Number | Keyowrd.math]" + atom + in_as_ListAtom.nodes.get(i));
+						}
+						
+						
+					} 
+					running_value = (opperation.equals("+"))  ? Operate.sum(nums)  			  :
+   									(opperation.equals("-"))  ? Operate.sub(nums)   		  :
+   									(opperation.equals("*"))  ? Operate.prod(nums) 			  :
+   									(opperation.equals("/"))  ? Operate.div(nums)  			  :
+			   						(opperation.equals("%"))  ? Operate.mod(nums)  			  :
+			   						(opperation.equals("^"))  ? Operate.pow(nums)  			  :
+			   						(opperation.equals("="))  ? Operate.equal(nums)           :
+			   						(opperation.equals(">"))  ? Operate.greaterThan(nums)     :
+			   						(opperation.equals("<"))  ? Operate.lessThan(nums)        :
+			   						(opperation.equals(">=")) ? Operate.greaterThanOrEQ(nums) :
+			   						(opperation.equals("<=")) ? Operate.lessThanOrEQ(nums)    : null;  
+					if(running_value == null) throw error_arg(opperation + " is an invalid numerical operation");
+					return running_value;
+				}
+			}
+			
 			if (head_of_list instanceof ListAtom) {
 				head_of_list = run(head_of_list, lambda_vars);
 			}
@@ -468,31 +520,22 @@ public class Interpreter {
 		 * 
 		 * 
 		 */
-		case "+","-","*","/":
-			switch(in_ListAtom.nodes.size()) {
-			case 1:
-				throw error_arg(("!(" + head_name + " ?[NumberAtom]...)"));
-			case 2:
-				if (in_ListAtom.nodes.get(1) instanceof NumberAtom) {
-					return (NumberAtom) in_ListAtom.nodes.get(1);
-				} else throw error_arg(("(" + head_name + " ![NumberAtom]...)"));
-			default:
+		case "-":
+			if(in_ListAtom.nodes.size() < 2) 
+				throw error_arg(("!(- ?[NumberAtom]...)"));
+			{
 				List<NumberAtom> nums = new LinkedList<NumberAtom>();
+				nums.add(new NumberAtom(0));
 				for (int i = 1; i < in_ListAtom.nodes.size(); i++) {
 					Atom internal = run(in_ListAtom.nodes.get(i), lambda_vars);
 					if (internal instanceof NumberAtom) {
 						nums.add((NumberAtom) internal);
 					} else throw error_arg(("(" + head_name + " ![NumberAtom]...)"));
 				}
-				
-				if (nums.size() > 0) 
-					return (head_name.equals("+")) ? Operate.sum(nums)  :
-						   (head_name.equals("-")) ? Operate.sub(nums)  :
-						   (head_name.equals("*")) ? Operate.prod(nums) :
-						   (head_name.equals("/")) ? Operate.div(nums)  : null;                       
-				else throw error_arg(("(" + head_name + " ![NumberAtom]...)"));
+				return Operate.sub(nums);   
 			}
-		case "^":
+			
+		case "pow":
 			if (in_ListAtom.nodes.size() != 3) 
 				throw error_arg(("!(^ ?[NumberAtom] ?[NumberAtom])"));
 			else {
@@ -515,17 +558,6 @@ public class Interpreter {
 		//
 		//iDiv
 		//
-		case "mod":
-			if (in_ListAtom.nodes.size() != 3) 
-				throw error_arg(("!(mod ?[NumberAtom] ?[NumberAtom])"));
-			else {
-				Atom base = run(in_ListAtom.nodes.get(1), lambda_vars);
-				if (!(base instanceof NumberAtom)) throw error_arg(("(mod ![NumberAtom] ?[NumberAtom])"));
-				Atom exponent = run(in_ListAtom.nodes.get(2), lambda_vars);
-				if (!(exponent instanceof NumberAtom)) throw error_arg(("(mod [NumberAtom] ![NumberAtom])"));
-				
-				return Operate.mod((NumberAtom) base, (NumberAtom) exponent);
-			} 
 		case "round", "floor", "ceil":
 			if (in_ListAtom.nodes.size() != 2) 
 				throw error_arg(("!("+head_name+" ?[NumberAtom])"));
@@ -560,26 +592,6 @@ public class Interpreter {
 		 * 
 		 * 
 		 */
-		// COMPARATORS
-		case "=", ">", "<", ">=", "<=":
-			if (in_ListAtom.nodes.size() < 3) 
-				throw error_arg(("!(" + head_name + " ?[NumberAtom] ?[NumberAtom]...)")); 
-			else {
-				List<NumberAtom> nums = new LinkedList<NumberAtom>();
-				for (int i = 1; i < in_ListAtom.nodes.size(); i++) {
-					Atom internal = run(in_ListAtom.nodes.get(i), lambda_vars);
-					if (internal instanceof NumberAtom) {
-						nums.add((NumberAtom) internal);
-					} else throw error_arg(("(" + head_name + " ![NumberAtom] ![NumberAtom]... \"1+ of the args is invalid\")")); 
-				}
-				if (nums.size() <= 0)
-					throw error_arg(("(" + head_name + " ![NumberAtom] ![NumberAtom]... \"empty args\")")); 
-				else return (head_name.equals("="))  ? Operate.equal(nums)           :
-					        (head_name.equals(">"))  ? Operate.greaterThan(nums)     :
-					        (head_name.equals("<"))  ? Operate.lessThan(nums)        :
-					        (head_name.equals(">=")) ? Operate.greaterThanOrEQ(nums) :
-					        (head_name.equals("<=")) ? Operate.lessThanOrEQ(nums)    : null;   
-			}
 		// BOOL LOGIC
 		case "AND", "OR":
 			if (in_ListAtom.nodes.size() < 3) 

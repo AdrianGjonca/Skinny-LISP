@@ -123,40 +123,17 @@ public class Operate {
 			return new NumberAtom(runningsum);
 		}
 	}
-	public static NumberAtom pow(NumberAtom base, NumberAtom exponent) {
-		if(exponent.type == NumberType.INTEGER && base.type == NumberType.INTEGER) {
-			long exponent_value = exponent.rawData;
-			long base_value = base.rawData;
-			
-			if(base_value == 0) return new NumberAtom(0);
-			if(exponent_value == 0) return new NumberAtom (1); 
-			
-			boolean reciprocal = (exponent_value < 0) ? true : false;
-			if(reciprocal) exponent_value = -exponent_value;
-			
-			long result = ipow(base_value, exponent_value);
-			
-			if(reciprocal) {
-				return new NumberAtom(1.0/((double) result));
-			}else return new NumberAtom(result);
-		}else {
-			double base_value = 0;
-			double exponent_value = 0;
-			
-			if(base.type ==  NumberType.INTEGER) {
-				base_value = (double) base.rawData;
-			}else {
-				base_value = Double.longBitsToDouble(base.rawData);
-			}
-			if(exponent.type ==  NumberType.INTEGER) {
-				exponent_value = (double) exponent.rawData;
-			}else {
-				exponent_value = Double.longBitsToDouble(exponent.rawData);
-			}
-			
-			return new NumberAtom(Math.pow(base_value, exponent_value));
-		}
+	public static NumberAtom pow(List<NumberAtom> atoms) {
+		return pow(atoms.get(0), prod(atoms.subList(1,atoms.size())));
 	}
+	public static NumberAtom mod(List<NumberAtom> atoms) {
+		NumberAtom runningsum = atoms.get(0);
+		for(int i = 1; i<atoms.size(); i++) {
+			runningsum = mod(runningsum, atoms.get(i));
+		}
+		return runningsum;
+	}
+	
 	
 	public static NumberAtom log(NumberAtom value) {
 		double value_as_double = 0;
@@ -231,6 +208,40 @@ public class Operate {
 		return new NumberAtom(Math.atan(value_as_double));
 	}
 	
+	public static NumberAtom pow(NumberAtom base, NumberAtom exponent) {
+		if(exponent.type == NumberType.INTEGER && base.type == NumberType.INTEGER) {
+			long exponent_value = exponent.rawData;
+			long base_value = base.rawData;
+			
+			if(base_value == 0) return new NumberAtom(0);
+			if(exponent_value == 0) return new NumberAtom (1); 
+			
+			boolean reciprocal = (exponent_value < 0) ? true : false;
+			if(reciprocal) exponent_value = -exponent_value;
+			
+			long result = ipow(base_value, exponent_value);
+			
+			if(reciprocal) {
+				return new NumberAtom(1.0/((double) result));
+			}else return new NumberAtom(result);
+		}else {
+			double base_value = 0;
+			double exponent_value = 0;
+			
+			if(base.type ==  NumberType.INTEGER) {
+				base_value = (double) base.rawData;
+			}else {
+				base_value = Double.longBitsToDouble(base.rawData);
+			}
+			if(exponent.type ==  NumberType.INTEGER) {
+				exponent_value = (double) exponent.rawData;
+			}else {
+				exponent_value = Double.longBitsToDouble(exponent.rawData);
+			}
+			
+			return new NumberAtom(Math.pow(base_value, exponent_value));
+		}
+	}
 	public static NumberAtom mod(NumberAtom A, NumberAtom B) {
 		if(A.type == NumberType.FLOAT || B.type == NumberType.FLOAT) {
 			double A_value;
