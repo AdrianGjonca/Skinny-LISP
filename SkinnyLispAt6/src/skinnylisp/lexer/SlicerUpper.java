@@ -30,7 +30,6 @@ public class SlicerUpper {
 		}
 		out = new String(cOut);
 		out.trim();
-		OutC.debug(out);
 		return out;
 	}
 	

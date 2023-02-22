@@ -1,8 +1,10 @@
 package skinnylisp.entrypoints;
 
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.Scanner;
 
+import skinnylisp.OutC;
 import skinnylisp.engine.Interpreter;
 import skinnylisp.exceptions.CodeInvalidEx;
 import skinnylisp.exceptions.LispRuntimeError;
@@ -14,10 +16,13 @@ public class REPL {
 	public PrintStream print_stream;
 	public Scanner scanner;
 	public Interpreter interpreter;
-	public REPL(PrintStream print_stream, Scanner scanner) {
+	public REPL(PrintStream print_stream, InputStream input_stream) {
 		this.print_stream = print_stream;
-		this.scanner = scanner;
+		print_stream.print("\u001b[0m");
+		this.scanner = new Scanner(input_stream);
 		this.interpreter = new Interpreter();
+		this.interpreter.printstream = print_stream;
+		this.interpreter.inputstream = input_stream;
 	}
 	
 	public void doIt(String code) {
@@ -30,10 +35,10 @@ public class REPL {
 		}
 		
 		try {
-			print_stream.println(interpreter.run(abstract_syntax_tree));
+			OutC.debug(print_stream, interpreter.run(abstract_syntax_tree));
 		} catch (LispRuntimeError e) {
-			e.printStackTrace();
-			print_stream.println("ERROR \n    " + e.error.getErrorMessage().replace("\n", "\n    ") + "\n" + "END ERROR");
+			//e.printStackTrace();
+			OutC.error(print_stream, "ERROR \n    " + e.error.getErrorMessage().replace("\n", "\n    ") + "\n" + "END ERROR");
 		}
 	}
 	

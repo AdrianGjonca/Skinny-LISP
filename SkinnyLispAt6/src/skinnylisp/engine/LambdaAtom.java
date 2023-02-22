@@ -13,20 +13,27 @@ import skinnylisp.parser.atoms.LambdaVariableAtom;
 public class LambdaAtom extends Atom {
 		
 	public List<String>   params;
-	public List<LispType> types;
+	public List<List<LispType>> types;
 	public Atom process;
+	
+	public String name = "~~";
+	
 	public LambdaAtom(ListAtom vars, Atom process) throws LispRuntimeError {
 		params = new LinkedList<String>();
-		types = new LinkedList<LispType>();
-		LispType typeon = LispType.Any;
+		types = new LinkedList<List<LispType>>();
+		List<LispType> typeon = new LinkedList<LispType>();
+		boolean finnished = false;
 		for(Atom n : vars.nodes) {
+			if(finnished) {
+				typeon = new LinkedList<LispType>();
+				finnished = false;
+			}
 			if(n instanceof KeywordAtom) {
 				String name = ((KeywordAtom) n).keyword;
-				typeon = LispType.Any;
 				boolean success = false;
 				for(LispType r : LispType.values()) {
 					if(name.equals(r.name)) {
-						typeon = r;
+						typeon.add(r);
 						success = true;
 						break;
 					}
@@ -35,8 +42,9 @@ public class LambdaAtom extends Atom {
 			} else if(n instanceof LambdaVariableAtom) {
 				LambdaVariableAtom a = (LambdaVariableAtom) n;
 				params.add(a.name);
+				if(typeon.size() == 0) typeon.add(LispType.Any);
 				types.add(typeon);
-				typeon = LispType.Any;
+				finnished = true;
 			} else throw Interpreter.error_arg("(lambda !([argN | Type]) ?(~expression~))");
 		}
 		this.process = process;

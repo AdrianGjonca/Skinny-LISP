@@ -47,7 +47,7 @@ public class Main {
 			e.printStackTrace();
 		}
 		
-		REPL repl = new REPL(System.out, new Scanner(System.in));
+		REPL repl = new REPL(System.out, System.in);
 		repl.exec(code);
 		repl.displayTitle();
 		while(true) {
@@ -56,7 +56,7 @@ public class Main {
 	}
 	
 	public static void repl() {
-		REPL repl = new REPL(System.out, new Scanner(System.in));
+		REPL repl = new REPL(System.out, System.in);
 		repl.displayTitle();
 		while(true) {
 			repl.line();

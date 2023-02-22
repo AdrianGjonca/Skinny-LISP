@@ -1,6 +1,7 @@
 package skinnylisp.engine;
 
 import skinnylisp.lexer.atoms.Atom;
+import skinnylisp.lexer.atoms.ListAtom;
 import skinnylisp.parser.atoms.NumberAtom;
 import skinnylisp.parser.atoms.StringAtom;
 
@@ -12,7 +13,7 @@ public enum LispType {
 	Float      ("Float"  , NumberAtom.class),
 	String     ("String" , StringAtom.class),
 	
-	Expression ("Expression", Atom.class),
+	Expression ("Expression", ListAtom.class),
 	
 	;
 	

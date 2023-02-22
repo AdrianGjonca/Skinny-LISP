@@ -1,5 +1,7 @@
 package skinnylisp.engine;
 
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,6 +35,10 @@ public class Interpreter {
 	private final static HashMap<String, Atom> NULL_LAMBDA_VARS = new HashMap<String, Atom>();
 	
 	public HashMap<String, Atom> variables_map;
+	
+	public PrintStream printstream = System.out;
+	public InputStream inputstream = System.in;
+	
 	public Interpreter() {
 		variables_map = new HashMap<String, Atom>();
 	}
@@ -74,12 +80,61 @@ public class Interpreter {
 				HashMap<String, Atom> lambda_vars_to_pass_on = new HashMap<String, Atom>();
 
 				int index_on_nodes = 1;
+				if(in_as_ListAtom.nodes.size() - 1 != head_as_LambdaAtom.params.size()) {
+					String error = "!("+ head_as_LambdaAtom.name +" ";
+					for(int i = 0; i<head_as_LambdaAtom.types.size(); i++) {
+						error += "?"
+							   + head_as_LambdaAtom.types.get(i).toString()
+							   + ((i+1 == head_as_LambdaAtom.types.size()) ? ")" : " ");
+						
+					}
+					throw error_arg(error);
+				}
+				
 				for (String par : head_as_LambdaAtom.params) {
 					Atom n;
-					n = (head_as_LambdaAtom.types.get(index_on_nodes-1) == LispType.Expression) ? in_as_ListAtom.nodes.get(index_on_nodes)
-							 																  : run(in_as_ListAtom.nodes.get(index_on_nodes), lambda_vars);
-					Class atom_class = head_as_LambdaAtom.types.get(index_on_nodes-1).atom_class;
-					if(!(atom_class.isInstance(n))) throw error_arg("~~");
+					n = (head_as_LambdaAtom.types.get(index_on_nodes-1).contains(LispType.Expression)) ? in_as_ListAtom.nodes.get(index_on_nodes)
+							 																           : run(in_as_ListAtom.nodes.get(index_on_nodes), lambda_vars);
+					
+					boolean type_valid = false;
+					for(LispType possible : head_as_LambdaAtom.types.get(index_on_nodes-1)) {
+						Class atom_class = possible.atom_class;
+						if(atom_class.isInstance(n)) {
+							if(atom_class == NumberAtom.class) {
+								switch(possible) {
+								case Integer:
+									if(((NumberAtom) n).type == NumberType.INTEGER) type_valid = true;
+									break;
+								case Float:
+									if(((NumberAtom) n).type == NumberType.FLOAT) type_valid = true;
+									break;
+								default:
+									type_valid = true;
+									break;
+								}
+								break;
+							}else {
+								type_valid = true;
+								break;
+							}
+						}
+					}
+					
+					if(!type_valid) {
+						String error = "("+ head_as_LambdaAtom.name +" ";
+						int check = 10000;
+						for(int i = 0; i<head_as_LambdaAtom.types.size(); i++) {
+							if(index_on_nodes-1 == i) {
+								error +="!";
+								check = i;
+							}
+							error += ((i>check) ? "?" : "") 
+								   + head_as_LambdaAtom.types.get(i).toString()
+								   + ((i+1 == head_as_LambdaAtom.types.size()) ? ")" : " ");
+							
+						}
+						throw error_arg(error);
+					}
 					else lambda_vars_to_pass_on.put(par, n);
 					index_on_nodes++;
 				}
@@ -242,6 +297,7 @@ public class Interpreter {
 				Atom the_return = run(in_ListAtom.nodes.get(2), lambda_vars);
 				variables_map.put(((VariableAtom) in_ListAtom.nodes.get(1)).name,
 						the_return);
+				if(the_return instanceof LambdaAtom) ((LambdaAtom) the_return).name = ((VariableAtom) in_ListAtom.nodes.get(1)).name;
 				return the_return;
 			}
 		case "lambda":
@@ -323,8 +379,8 @@ public class Interpreter {
 					} else throw error_arg(("(input ![String | NumberAtom])"));
 				}
 				
-				Scanner scan = new Scanner(System.in);
-				System.out.print(prompt);
+				Scanner scan = new Scanner(inputstream);
+				printstream.print(prompt);
 				String out = scan.nextLine();
 				
 				return new StringAtom(out, 0);
@@ -342,7 +398,7 @@ public class Interpreter {
 						throw error_arg(("(print ![String | NumberAtom]...)"));
 					}
 				}
-				System.out.println(out);
+				printstream.println(out);
 			} break;
 		case "out":
 			if(in_ListAtom.nodes.size() > 1) {
@@ -350,7 +406,7 @@ public class Interpreter {
 				for (int index = 1; index < in_ListAtom.nodes.size(); index++) {
 					out += run(in_ListAtom.nodes.get(index), lambda_vars) + " ";
 				}
-				System.out.println(out);
+				printstream.println(out);
 			} break;
 			
 		/*
@@ -517,7 +573,7 @@ public class Interpreter {
 		 * 
 		 */
 		case "dummy":
-			System.out.println("dummy!!");
+			printstream.println("dummy!!");
 			return null;
 
 		/*

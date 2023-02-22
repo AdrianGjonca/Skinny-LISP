@@ -447,7 +447,6 @@ public class Operate {
 			}
 		}
 		if(floatornot) {
-			OutC.debug("This mode");
 			double mainValue = 0;
 			if(atoms.get(0).type == NumberType.FLOAT) {
 				mainValue = Double.longBitsToDouble(atoms.get(0).rawData);
