@@ -1,8 +1,8 @@
 package skinnylisp.engine;
 
-import skinnylisp.lexer.atoms.Atom;
-import skinnylisp.parser.atoms.NumberAtom;
-import skinnylisp.parser.atoms.StringAtom;
+import skinnylisp.ast.atoms.Atom;
+import skinnylisp.ast.atoms.NumberAtom;
+import skinnylisp.ast.atoms.StringAtom;
 
 public enum LispType {
 	Any        ("Any"    , Atom.class),

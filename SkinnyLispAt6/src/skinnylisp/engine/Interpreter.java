@@ -8,23 +8,22 @@ import java.util.List;
 import java.util.Scanner;
 
 import data.Mutable;
-import skinnylisp.engine.lists.DataListAtom;
-import skinnylisp.engine.lists.ListType;
+import skinnylisp.ast.atoms.Atom;
+import skinnylisp.ast.atoms.KeywordAtom;
+import skinnylisp.ast.atoms.LambdaVariableAtom;
+import skinnylisp.ast.atoms.NumberAtom;
+import skinnylisp.ast.atoms.StatementAtom;
+import skinnylisp.ast.atoms.StringAtom;
+import skinnylisp.ast.atoms.VariableAtom;
 import skinnylisp.engine.numbercrunch.Operate;
-import skinnylisp.exceptions.LispRuntimeError;
-import skinnylisp.exceptions.runtime_errors.Err_IncorrectArgs;
-import skinnylisp.exceptions.runtime_errors.Err_Ubounds;
-import skinnylisp.exceptions.runtime_errors.Err_Undefined;
-import skinnylisp.exceptions.runtime_errors.Err_Undefined.AtomType;
-import skinnylisp.exceptions.runtime_errors.LispError;
-import skinnylisp.lexer.atoms.Atom;
-import skinnylisp.lexer.atoms.ListAtom;
-import skinnylisp.parser.atoms.KeywordAtom;
-import skinnylisp.parser.atoms.LambdaVariableAtom;
-import skinnylisp.parser.atoms.NumberAtom;
-import skinnylisp.parser.atoms.StringAtom;
-import skinnylisp.parser.atoms.VariableAtom;
-import skinnylisp.parser.atoms.numtypes.NumberType;
+import skinnylisp.engine.runtime_errors.Err_IncorrectArgs;
+import skinnylisp.engine.runtime_errors.Err_Ubounds;
+import skinnylisp.engine.runtime_errors.Err_Undefined;
+import skinnylisp.engine.runtime_errors.RuntimeError;
+import skinnylisp.engine.runtime_errors.Err_Undefined.AtomType;
+import skinnylisp.engine.runtimeatoms.FuncAtom;
+import skinnylisp.engine.runtimeatoms.ListAtom;
+import skinnylisp.engine.runtimeatoms.ListAtom.ListType;
 
 public class Interpreter {
 	private final static HashMap<String, Atom> NULL_LAMBDA_VARS = new HashMap<String, Atom>();
@@ -38,16 +37,16 @@ public class Interpreter {
 	public Interpreter() {
 		variables_map = new HashMap<String, Atom>();
 	}
-	public Atom run(Atom in_atom) throws LispRuntimeError {
+	public Atom run(Atom in_atom) throws WrapOf_RuntimeError {
 		return run(in_atom, NULL_LAMBDA_VARS);
 	}
 	
-	private Atom _commandPart(Atom head, ListAtom statement, HashMap<String, Atom> lambda_vars, Mutable<Boolean> complete) throws LispRuntimeError{
+	private Atom _commandPart(Atom head, StatementAtom statement, HashMap<String, Atom> lambda_vars, Mutable<Boolean> complete) throws WrapOf_RuntimeError{
 		complete.value = true;
 		if (head instanceof KeywordAtom) {
 			return handleKeyword(statement, lambda_vars);
-		}else if (head instanceof LambdaAtom) {
-			LambdaAtom head_as_LambdaAtom = (LambdaAtom) head;
+		}else if (head instanceof FuncAtom) {
+			FuncAtom head_as_LambdaAtom = (FuncAtom) head;
 			HashMap<String, Atom> lambda_vars_to_pass_on = new HashMap<String, Atom>();
 
 			int index_on_nodes = 1;
@@ -73,10 +72,10 @@ public class Interpreter {
 						if(atom_class == NumberAtom.class) {
 							switch(possible) {
 							case Integer:
-								if(((NumberAtom) n).type == NumberType.INTEGER) type_valid = true;
+								if(((NumberAtom) n).type == NumberAtom.Type.INTEGER) type_valid = true;
 								break;
 							case Float:
-								if(((NumberAtom) n).type == NumberType.FLOAT) type_valid = true;
+								if(((NumberAtom) n).type == NumberAtom.Type.FLOAT) type_valid = true;
 								break;
 							default:
 								type_valid = true;
@@ -109,7 +108,7 @@ public class Interpreter {
 				index_on_nodes++;
 			}
 			lambda_vars_to_pass_on.put("", head_as_LambdaAtom);
-			return run((ListAtom) head_as_LambdaAtom.process, lambda_vars_to_pass_on);
+			return run((StatementAtom) head_as_LambdaAtom.process, lambda_vars_to_pass_on);
 		} else {
 			complete.value = false;
 			return null;
@@ -130,7 +129,7 @@ public class Interpreter {
 			   (operation.equals(">=")) ? Operate.greaterThanOrEQ(nums) :
 			   (operation.equals("<=")) ? Operate.lessThanOrEQ(nums)    : null;   
 	}
-	private Atom _handleInfix(NumberAtom head, ListAtom statement, HashMap<String, Atom> lambda_vars) throws LispRuntimeError{
+	private Atom _handleInfix(NumberAtom head, StatementAtom statement, HashMap<String, Atom> lambda_vars) throws WrapOf_RuntimeError{
 		if(statement.nodes.size() == 1) return head;
 		String opperation = "+";
 		List<NumberAtom> nums = new LinkedList<NumberAtom>();
@@ -158,7 +157,7 @@ public class Interpreter {
 		if(head == null) throw error_arg(opperation + " is an invalid numerical operation");
 		return head;	
 	}
-	private Atom _2_handleDataList(DataListAtom head, ListAtom statement, HashMap<String, Atom> lambda_vars) throws LispRuntimeError {
+	private Atom _2_handleDataList(ListAtom head, StatementAtom statement, HashMap<String, Atom> lambda_vars) throws WrapOf_RuntimeError {
 		Atom second_node = statement.nodes.get(1);
 		
 		if(second_node instanceof KeywordAtom) {
@@ -173,7 +172,7 @@ public class Interpreter {
 				throw error_arg(("(List ![Keyword.'size' | Integer])"));
 			else {
 				NumberAtom second_node_As_NumberAtom = (NumberAtom) second_node;
-				if(second_node_As_NumberAtom.type != NumberType.INTEGER) 
+				if(second_node_As_NumberAtom.type != NumberAtom.Type.INTEGER) 
 					throw error_arg(("(List !Integer)"));
 				else {
 					int index = (int) second_node_As_NumberAtom.rawData;
@@ -185,7 +184,7 @@ public class Interpreter {
 			}
 		}
 	}
-	private Atom _3_handleDataList(DataListAtom head, ListAtom statement, HashMap<String, Atom> lambda_vars) throws LispRuntimeError {
+	private Atom _3_handleDataList(ListAtom head, StatementAtom statement, HashMap<String, Atom> lambda_vars) throws WrapOf_RuntimeError {
 		Atom second_node = statement.nodes.get(1);
 		Atom third_node = statement.nodes.get(2);
 		
@@ -203,7 +202,7 @@ public class Interpreter {
 				if(!(third_node instanceof NumberAtom)) 
 					throw error_arg(("(List Keyword.'remove' !Integer~\"we got a Float\")"));
 				else {
-					if(((NumberAtom)third_node).type != NumberType.INTEGER) 
+					if(((NumberAtom)third_node).type != NumberAtom.Type.INTEGER) 
 						throw error_arg(("(List Keyword.'remove' !Integer)"));
 					else{
 						int index = (int) ((NumberAtom)third_node).rawData;
@@ -222,7 +221,7 @@ public class Interpreter {
 		
 		return null;
 	}
-	private Atom _4_handleDataList(DataListAtom head, ListAtom statement, HashMap<String, Atom> lambda_vars) throws LispRuntimeError {
+	private Atom _4_handleDataList(ListAtom head, StatementAtom statement, HashMap<String, Atom> lambda_vars) throws WrapOf_RuntimeError {
 		Atom second_node = statement.nodes.get(1);
 		Atom third_node = statement.nodes.get(2);
 		Atom fourth_node = statement.nodes.get(3);
@@ -240,7 +239,7 @@ public class Interpreter {
 				if(!(third_node instanceof NumberAtom)) 
 					throw error_arg(("(List Keyword.'set' !Integer ?Atom)"));
 				else {
-					if(((NumberAtom)third_node).type != NumberType.INTEGER)  
+					if(((NumberAtom)third_node).type != NumberAtom.Type.INTEGER)  
 						throw error_arg(("(List Keyword.!'set' !Integer~\"we got a Float\" ?Atom)"));
 					else {
 						List<Atom> the_list = head.list;
@@ -257,7 +256,7 @@ public class Interpreter {
 		
 		return null;
 	}
-	private Atom _handleDataList(DataListAtom head, ListAtom statement, HashMap<String, Atom> lambda_vars) throws LispRuntimeError{		
+	private Atom _handleDataList(ListAtom head, StatementAtom statement, HashMap<String, Atom> lambda_vars) throws WrapOf_RuntimeError{		
 		switch (statement.nodes.size()) {
 		case 1:
 			return head;
@@ -272,14 +271,14 @@ public class Interpreter {
 		}
 	}
 	
-	private Atom run(Atom in_statement, HashMap<String, Atom> lambda_vars) throws LispRuntimeError {
-		if (!(in_statement instanceof ListAtom)) {
-			ListAtom onwards_list = new ListAtom();
+	private Atom run(Atom in_statement, HashMap<String, Atom> lambda_vars) throws WrapOf_RuntimeError {
+		if (!(in_statement instanceof StatementAtom)) {
+			StatementAtom onwards_list = new StatementAtom();
 			onwards_list.nodes.add(in_statement);
 			in_statement = onwards_list;
 		}
 		
-		ListAtom statement = (ListAtom) in_statement;
+		StatementAtom statement = (StatementAtom) in_statement;
 		if (statement.nodes.size() == 0) return null;
 		
 		Atom head = statement.nodes.get(0);
@@ -291,10 +290,10 @@ public class Interpreter {
 			else throw error(new Err_Undefined(((VariableAtom) head).name , AtomType.Variable));
 		}
 		
-		if (head instanceof ListAtom) head = run(head, lambda_vars);
+		if (head instanceof StatementAtom) head = run(head, lambda_vars);
 		
 		if (head instanceof NumberAtom) return _handleInfix((NumberAtom) head, statement, lambda_vars);
-		if (head instanceof DataListAtom) return _handleDataList((DataListAtom) head, statement, lambda_vars);
+		if (head instanceof ListAtom) return _handleDataList((ListAtom) head, statement, lambda_vars);
 		else {
 			Mutable<Boolean> complete = new Mutable<Boolean>(false);
 			Atom possible = null;
@@ -303,7 +302,7 @@ public class Interpreter {
 		}
 		return head;
 	}
-	private Atom handleKeyword(ListAtom in_ListAtom, HashMap<String, Atom> lambda_vars) throws LispRuntimeError {
+	private Atom handleKeyword(StatementAtom in_ListAtom, HashMap<String, Atom> lambda_vars) throws WrapOf_RuntimeError {
 		/*
 		 * MASSIVE SWITCH STATEMENT INCOMING
 		 * 
@@ -330,26 +329,26 @@ public class Interpreter {
 					Atom the_return = run(in_ListAtom.nodes.get(2), lambda_vars);
 					variables_map.put(((VariableAtom) the_var).name,
 							the_return);
-					if(the_return instanceof LambdaAtom) ((LambdaAtom) the_return).name = ((VariableAtom) in_ListAtom.nodes.get(1)).name;
+					if(the_return instanceof FuncAtom) ((FuncAtom) the_return).name = ((VariableAtom) in_ListAtom.nodes.get(1)).name;
 					return the_return;
 				}
 			}
 		case "lambda":
 			if(in_ListAtom.nodes.size() != 3) throw error_arg(("!(lambda ?[(arg1 arg2...) | ()] ?(~expression~))"));
-			if(!(in_ListAtom.nodes.get(1) instanceof ListAtom)) throw error_arg(("(lambda ![(arg1 arg2...) | ()] ?(~expression~))"));
+			if(!(in_ListAtom.nodes.get(1) instanceof StatementAtom)) throw error_arg(("(lambda ![(arg1 arg2...) | ()] ?(~expression~))"));
 			else {
 				Atom body = in_ListAtom.nodes.get(2);
 				if(body instanceof LambdaVariableAtom ) body = lambda_vars.get(((LambdaVariableAtom)body).name);
-				ListAtom listof_lambda_vars = (ListAtom) in_ListAtom.nodes.get(1);
-				ListAtom function = (ListAtom) body;
-				while (function.nodes.get(0) instanceof ListAtom)
-					function = (ListAtom) function.nodes.get(0);
-				return new LambdaAtom(listof_lambda_vars, function);
+				StatementAtom listof_lambda_vars = (StatementAtom) in_ListAtom.nodes.get(1);
+				StatementAtom function = (StatementAtom) body;
+				while (function.nodes.get(0) instanceof StatementAtom)
+					function = (StatementAtom) function.nodes.get(0);
+				return new FuncAtom(listof_lambda_vars, function);
 			}
 		case "list", "array":
 			if(true) {
-				DataListAtom the_return = (head_name.equals("list")) ? new DataListAtom(ListType.LinkedList)
-																	 : new DataListAtom(ListType.ArrayList);
+				ListAtom the_return = (head_name.equals("list")) ? new ListAtom(ListType.LinkedList)
+																	 : new ListAtom(ListType.ArrayList);
 				for(int index = 1; index < in_ListAtom.nodes.size(); index++) {
 					the_return.list.add(run(in_ListAtom.nodes.get(index), lambda_vars));
 				}
@@ -394,10 +393,10 @@ public class Interpreter {
 						if(t.atom_class == NumberAtom.class) {
 							switch(t) {
 							case Integer:
-								if(((NumberAtom) check).type == NumberType.INTEGER) return new NumberAtom(1);
+								if(((NumberAtom) check).type == NumberAtom.Type.INTEGER) return new NumberAtom(1);
 								break;
 							case Float:
-								if(((NumberAtom) check).type == NumberType.FLOAT) return new NumberAtom(1);
+								if(((NumberAtom) check).type == NumberAtom.Type.FLOAT) return new NumberAtom(1);
 								break;
 							default:
 								return new NumberAtom(1);
@@ -426,7 +425,7 @@ public class Interpreter {
 				Object o = run(in_ListAtom.nodes.get(1), lambda_vars);
 				if (o instanceof NumberAtom) {
 					NumberAtom n = (NumberAtom) o;
-					return (n.type == NumberType.INTEGER) ? n
+					return (n.type == NumberAtom.Type.INTEGER) ? n
 														  : new NumberAtom((long)Double.longBitsToDouble(n.rawData));
 				} else if (o instanceof StringAtom) {
 					StringAtom atom = (StringAtom) o;
@@ -440,7 +439,7 @@ public class Interpreter {
 				Object o = run(in_ListAtom.nodes.get(1), lambda_vars);
 				if (o instanceof NumberAtom) {
 					NumberAtom n = (NumberAtom) o;
-					return (n.type == NumberType.FLOAT) ? n
+					return (n.type == NumberAtom.Type.FLOAT) ? n
 													    : new NumberAtom((double)n.rawData);
 				} else if (o instanceof StringAtom) {
 					StringAtom atom = (StringAtom) o;
@@ -644,10 +643,10 @@ public class Interpreter {
 				}
 				
 				for (int i = 1; i < in_ListAtom.nodes.size(); i++) {
-					if (!(in_ListAtom.nodes.get(i) instanceof ListAtom)) 
+					if (!(in_ListAtom.nodes.get(i) instanceof StatementAtom)) 
 						throw error_arg(("(" + head_name + " !(~expression~) !(~expression~)... \"1+ of the args is invalid\")")); 
 					{
-						ListAtom statement_we_on = (ListAtom) in_ListAtom.nodes.get(i);
+						StatementAtom statement_we_on = (StatementAtom) in_ListAtom.nodes.get(i);
 						if (statement_we_on.nodes.size() != 0) 
 						if (statement_we_on.nodes.get(0) instanceof KeywordAtom) {
 							KeywordAtom k = (KeywordAtom) statement_we_on.nodes.get(0);
@@ -739,14 +738,14 @@ public class Interpreter {
 	 * UTILITIES
 	 * 
 	 */
-	public static LispRuntimeError error(LispError error){
-		return new LispRuntimeError(error);
+	public static WrapOf_RuntimeError error(RuntimeError error){
+		return new WrapOf_RuntimeError(error);
 	}
-	public static LispRuntimeError error() {
-		return new LispRuntimeError();
+	public static WrapOf_RuntimeError error() {
+		return new WrapOf_RuntimeError();
 	}
-	public static LispRuntimeError error_arg(String e) {
-		return new LispRuntimeError(new Err_IncorrectArgs(e));
+	public static WrapOf_RuntimeError error_arg(String e) {
+		return new WrapOf_RuntimeError(new Err_IncorrectArgs(e));
 	}
 
 }

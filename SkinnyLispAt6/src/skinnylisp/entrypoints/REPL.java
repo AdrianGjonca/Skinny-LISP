@@ -4,13 +4,12 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.Scanner;
 
-import skinnylisp.OutC;
+import skinnylisp.ast.atoms.StatementAtom;
+import skinnylisp.ast.exceptions.CodeInvalidEx;
+import skinnylisp.ast.lexer.Precompiler;
+import skinnylisp.ast.parser.Parser;
 import skinnylisp.engine.Interpreter;
-import skinnylisp.exceptions.CodeInvalidEx;
-import skinnylisp.exceptions.LispRuntimeError;
-import skinnylisp.lexer.atoms.ListAtom;
-import skinnylisp.parser.Parser;
-import skinnylisp.precompiler.Precompiler;
+import skinnylisp.engine.WrapOf_RuntimeError;
 
 public class REPL {
 	public PrintStream print_stream;
@@ -26,9 +25,9 @@ public class REPL {
 	}
 	
 	public void doIt(String code) {
-		ListAtom abstract_syntax_tree = null;
+		StatementAtom abstract_syntax_tree = null;
 		try {
-			abstract_syntax_tree = new ListAtom(code);
+			abstract_syntax_tree = new StatementAtom(code);
 			abstract_syntax_tree = Parser.parse(abstract_syntax_tree);
 		} catch (CodeInvalidEx e) {
 			print_stream.println("Code invalid");
@@ -36,7 +35,7 @@ public class REPL {
 		
 		try {
 			OutC.debug(print_stream, interpreter.run(abstract_syntax_tree));
-		} catch (LispRuntimeError e) {
+		} catch (WrapOf_RuntimeError e) {
 			e.printStackTrace();
 			OutC.error(print_stream, "ERROR \n    " + e.error.getErrorMessage().replace("\n", "\n    ") + "\n" + "END ERROR");
 		}

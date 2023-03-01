@@ -2,14 +2,13 @@ package skinnylisp.engine.numbercrunch;
 
 import java.util.List;
 
-import skinnylisp.parser.atoms.NumberAtom;
-import skinnylisp.parser.atoms.numtypes.NumberType;
+import skinnylisp.ast.atoms.NumberAtom;
 
 public class Operate {
 	public static NumberAtom sum(List<NumberAtom> atoms) {
 		boolean floatornot = false;
 		for(NumberAtom a : atoms) {
-			if(a.type == NumberType.FLOAT) {
+			if(a.type == NumberAtom.Type.FLOAT) {
 				floatornot = true;
 				break;
 			}
@@ -17,7 +16,7 @@ public class Operate {
 		if(floatornot) {
 			double runningsum = 0;
 			for(NumberAtom a : atoms) {
-				if(a.type == NumberType.FLOAT) {
+				if(a.type == NumberAtom.Type.FLOAT) {
 					runningsum += Double.longBitsToDouble(a.rawData);
 				}else {
 					runningsum += (long)a.rawData;
@@ -35,20 +34,20 @@ public class Operate {
 	public static NumberAtom sub(List<NumberAtom> atoms) {
 		boolean floatornot = false;
 		for(NumberAtom a : atoms) {
-			if(a.type == NumberType.FLOAT) {
+			if(a.type == NumberAtom.Type.FLOAT) {
 				floatornot = true;
 				break;
 			}
 		}
 		if(floatornot) {
 			double runningsum = 0;
-			if(atoms.get(0).type == NumberType.FLOAT) {
+			if(atoms.get(0).type == NumberAtom.Type.FLOAT) {
 				runningsum += Double.longBitsToDouble(atoms.get(0).rawData);
 			}else {
 				runningsum += atoms.get(0).rawData;
 			}
 			for(int i = 1; i < atoms.size(); i++) {
-				if(atoms.get(i).type == NumberType.FLOAT) {
+				if(atoms.get(i).type == NumberAtom.Type.FLOAT) {
 					runningsum -= Double.longBitsToDouble(atoms.get(i).rawData);
 				}else {
 					runningsum -= atoms.get(i).rawData;
@@ -67,7 +66,7 @@ public class Operate {
 	public static NumberAtom prod(List<NumberAtom> atoms) {
 		boolean floatornot = false;
 		for(NumberAtom a : atoms) {
-			if(a.type == NumberType.FLOAT) {
+			if(a.type == NumberAtom.Type.FLOAT) {
 				floatornot = true;
 				break;
 			}
@@ -75,7 +74,7 @@ public class Operate {
 		if(floatornot) {
 			double runningsum = 1;
 			for(NumberAtom a : atoms) {
-				if(a.type == NumberType.FLOAT) {
+				if(a.type == NumberAtom.Type.FLOAT) {
 					runningsum *= Double.longBitsToDouble(a.rawData);
 				}else {
 					runningsum *= a.rawData;
@@ -93,20 +92,20 @@ public class Operate {
 	public static NumberAtom div(List<NumberAtom> atoms) {
 		boolean floatornot = false;
 		for(NumberAtom a : atoms) {
-			if(a.type == NumberType.FLOAT) {
+			if(a.type == NumberAtom.Type.FLOAT) {
 				floatornot = true;
 				break;
 			}
 		}
 		if(floatornot) {
 			double runningsum = 0;
-			if(atoms.get(0).type == NumberType.FLOAT) {
+			if(atoms.get(0).type == NumberAtom.Type.FLOAT) {
 				runningsum += Double.longBitsToDouble(atoms.get(0).rawData);
 			}else {
 				runningsum += atoms.get(0).rawData;
 			}
 			for(int i = 1; i < atoms.size(); i++) {
-				if(atoms.get(i).type == NumberType.FLOAT) {
+				if(atoms.get(i).type == NumberAtom.Type.FLOAT) {
 					runningsum /= Double.longBitsToDouble(atoms.get(i).rawData);
 				}else {
 					runningsum /= atoms.get(i).rawData;
@@ -137,7 +136,7 @@ public class Operate {
 	public static NumberAtom log(NumberAtom value) {
 		double value_as_double = 0;
 		
-		if(value.type ==  NumberType.INTEGER) {
+		if(value.type ==  NumberAtom.Type.INTEGER) {
 			value_as_double = (double) value.rawData;
 		}else {
 			value_as_double = Double.longBitsToDouble(value.rawData);
@@ -148,7 +147,7 @@ public class Operate {
 	public static NumberAtom sin(NumberAtom value) {
 		double value_as_double = 0;
 		
-		if(value.type ==  NumberType.INTEGER) {
+		if(value.type ==  NumberAtom.Type.INTEGER) {
 			value_as_double = (double) value.rawData;
 		}else {
 			value_as_double = Double.longBitsToDouble(value.rawData);
@@ -158,7 +157,7 @@ public class Operate {
 	public static NumberAtom cos(NumberAtom value) {
 		double value_as_double = 0;
 		
-		if(value.type ==  NumberType.INTEGER) {
+		if(value.type ==  NumberAtom.Type.INTEGER) {
 			value_as_double = (double) value.rawData;
 		}else {
 			value_as_double = Double.longBitsToDouble(value.rawData);
@@ -168,7 +167,7 @@ public class Operate {
 	public static NumberAtom tan(NumberAtom value) {
 		double value_as_double = 0;
 		
-		if(value.type ==  NumberType.INTEGER) {
+		if(value.type ==  NumberAtom.Type.INTEGER) {
 			value_as_double = (double) value.rawData;
 		}else {
 			value_as_double = Double.longBitsToDouble(value.rawData);
@@ -179,7 +178,7 @@ public class Operate {
 	public static NumberAtom asin(NumberAtom value) {
 		double value_as_double = 0;
 		
-		if(value.type ==  NumberType.INTEGER) {
+		if(value.type ==  NumberAtom.Type.INTEGER) {
 			value_as_double = (double) value.rawData;
 		}else {
 			value_as_double = Double.longBitsToDouble(value.rawData);
@@ -189,7 +188,7 @@ public class Operate {
 	public static NumberAtom acos(NumberAtom value) {
 		double value_as_double = 0;
 		
-		if(value.type ==  NumberType.INTEGER) {
+		if(value.type ==  NumberAtom.Type.INTEGER) {
 			value_as_double = (double) value.rawData;
 		}else {
 			value_as_double = Double.longBitsToDouble(value.rawData);
@@ -199,7 +198,7 @@ public class Operate {
 	public static NumberAtom atan(NumberAtom value) {
 		double value_as_double = 0;
 		
-		if(value.type ==  NumberType.INTEGER) {
+		if(value.type ==  NumberAtom.Type.INTEGER) {
 			value_as_double = (double) value.rawData;
 		}else {
 			value_as_double = Double.longBitsToDouble(value.rawData);
@@ -208,7 +207,7 @@ public class Operate {
 	}
 	
 	public static NumberAtom pow(NumberAtom base, NumberAtom exponent) {
-		if(exponent.type == NumberType.INTEGER && base.type == NumberType.INTEGER) {
+		if(exponent.type == NumberAtom.Type.INTEGER && base.type == NumberAtom.Type.INTEGER) {
 			long exponent_value = exponent.rawData;
 			long base_value = base.rawData;
 			
@@ -227,12 +226,12 @@ public class Operate {
 			double base_value = 0;
 			double exponent_value = 0;
 			
-			if(base.type ==  NumberType.INTEGER) {
+			if(base.type ==  NumberAtom.Type.INTEGER) {
 				base_value = (double) base.rawData;
 			}else {
 				base_value = Double.longBitsToDouble(base.rawData);
 			}
-			if(exponent.type ==  NumberType.INTEGER) {
+			if(exponent.type ==  NumberAtom.Type.INTEGER) {
 				exponent_value = (double) exponent.rawData;
 			}else {
 				exponent_value = Double.longBitsToDouble(exponent.rawData);
@@ -242,12 +241,12 @@ public class Operate {
 		}
 	}
 	public static NumberAtom mod(NumberAtom A, NumberAtom B) {
-		if(A.type == NumberType.FLOAT || B.type == NumberType.FLOAT) {
+		if(A.type == NumberAtom.Type.FLOAT || B.type == NumberAtom.Type.FLOAT) {
 			double A_value;
 			double B_value;
-			if(A.type == NumberType.FLOAT) A_value = Double.longBitsToDouble(A.rawData);
+			if(A.type == NumberAtom.Type.FLOAT) A_value = Double.longBitsToDouble(A.rawData);
 			else A_value = (double) A.rawData;
-			if(B.type == NumberType.FLOAT) B_value = Double.longBitsToDouble(B.rawData);
+			if(B.type == NumberAtom.Type.FLOAT) B_value = Double.longBitsToDouble(B.rawData);
 			else B_value = (double) B.rawData;
 			
 			return new NumberAtom(A_value % B_value);
@@ -258,7 +257,7 @@ public class Operate {
 	public static NumberAtom round(NumberAtom value) {
 		double value_as_double = 0;
 		
-		if(value.type ==  NumberType.INTEGER) {
+		if(value.type ==  NumberAtom.Type.INTEGER) {
 			value_as_double = (double) value.rawData;
 		}else {
 			value_as_double = Double.longBitsToDouble(value.rawData);
@@ -268,7 +267,7 @@ public class Operate {
 	public static NumberAtom floor(NumberAtom value) {
 		double value_as_double = 0;
 		
-		if(value.type ==  NumberType.INTEGER) {
+		if(value.type ==  NumberAtom.Type.INTEGER) {
 			value_as_double = (double) value.rawData;
 		}else {
 			value_as_double = Double.longBitsToDouble(value.rawData);
@@ -278,7 +277,7 @@ public class Operate {
 	public static NumberAtom ceil(NumberAtom value) {
 		double value_as_double = 0;
 		
-		if(value.type ==  NumberType.INTEGER) {
+		if(value.type ==  NumberAtom.Type.INTEGER) {
 			value_as_double = (double) value.rawData;
 		}else {
 			value_as_double = Double.longBitsToDouble(value.rawData);
@@ -306,21 +305,21 @@ public class Operate {
 	public static NumberAtom greaterThan(List<NumberAtom> atoms) {
 		boolean floatornot = false;
 		for(NumberAtom a : atoms) {
-			if(a.type == NumberType.FLOAT) {
+			if(a.type == NumberAtom.Type.FLOAT) {
 				floatornot = true;
 				break;
 			}
 		}
 		if(floatornot) {
 			double runningsum = 0;
-			if(atoms.get(0).type == NumberType.FLOAT) {
+			if(atoms.get(0).type == NumberAtom.Type.FLOAT) {
 				runningsum += Double.longBitsToDouble(atoms.get(0).rawData);
 			}else {
 				runningsum += atoms.get(0).rawData;
 			}
 			boolean yes = true;
 			for(int i = 1; i < atoms.size(); i++) {
-				if(atoms.get(i).type == NumberType.FLOAT) {
+				if(atoms.get(i).type == NumberAtom.Type.FLOAT) {
 					yes = runningsum > Double.longBitsToDouble(atoms.get(i).rawData);
 				}else {
 					yes = runningsum > atoms.get(i).rawData;
@@ -342,21 +341,21 @@ public class Operate {
 	public static NumberAtom lessThan(List<NumberAtom> atoms) {
 		boolean floatornot = false;
 		for(NumberAtom a : atoms) {
-			if(a.type == NumberType.FLOAT) {
+			if(a.type == NumberAtom.Type.FLOAT) {
 				floatornot = true;
 				break;
 			}
 		}
 		if(floatornot) {
 			double runningsum = 0;
-			if(atoms.get(0).type == NumberType.FLOAT) {
+			if(atoms.get(0).type == NumberAtom.Type.FLOAT) {
 				runningsum += Double.longBitsToDouble(atoms.get(0).rawData);
 			}else {
 				runningsum += atoms.get(0).rawData;
 			}
 			boolean yes = true;
 			for(int i = 1; i < atoms.size(); i++) {
-				if(atoms.get(i).type == NumberType.FLOAT) {
+				if(atoms.get(i).type == NumberAtom.Type.FLOAT) {
 					yes = runningsum < Double.longBitsToDouble(atoms.get(i).rawData);
 				}else {
 					yes = runningsum < atoms.get(i).rawData;
@@ -378,21 +377,21 @@ public class Operate {
 	public static NumberAtom greaterThanOrEQ(List<NumberAtom> atoms) {
 		boolean floatornot = false;
 		for(NumberAtom a : atoms) {
-			if(a.type == NumberType.FLOAT) {
+			if(a.type == NumberAtom.Type.FLOAT) {
 				floatornot = true;
 				break;
 			}
 		}
 		if(floatornot) {
 			double runningsum = 0;
-			if(atoms.get(0).type == NumberType.FLOAT) {
+			if(atoms.get(0).type == NumberAtom.Type.FLOAT) {
 				runningsum += Double.longBitsToDouble(atoms.get(0).rawData);
 			}else {
 				runningsum += atoms.get(0).rawData;
 			}
 			boolean yes = true;
 			for(int i = 1; i < atoms.size(); i++) {
-				if(atoms.get(i).type == NumberType.FLOAT) {
+				if(atoms.get(i).type == NumberAtom.Type.FLOAT) {
 					yes = runningsum >= Double.longBitsToDouble(atoms.get(i).rawData);
 				}else {
 					yes = runningsum >= atoms.get(i).rawData;
@@ -414,21 +413,21 @@ public class Operate {
 	public static NumberAtom lessThanOrEQ(List<NumberAtom> atoms) {
 		boolean floatornot = false;
 		for(NumberAtom a : atoms) {
-			if(a.type == NumberType.FLOAT) {
+			if(a.type == NumberAtom.Type.FLOAT) {
 				floatornot = true;
 				break;
 			}
 		}
 		if(floatornot) {
 			double runningsum = 0;
-			if(atoms.get(0).type == NumberType.FLOAT) {
+			if(atoms.get(0).type == NumberAtom.Type.FLOAT) {
 				runningsum += Double.longBitsToDouble(atoms.get(0).rawData);
 			}else {
 				runningsum += atoms.get(0).rawData;
 			}
 			boolean yes = true;
 			for(int i = 1; i < atoms.size(); i++) {
-				if(atoms.get(i).type == NumberType.FLOAT) {
+				if(atoms.get(i).type == NumberAtom.Type.FLOAT) {
 					yes = runningsum <= Double.longBitsToDouble(atoms.get(i).rawData);
 				}else {
 					yes = runningsum <= atoms.get(i).rawData;
@@ -451,21 +450,21 @@ public class Operate {
 	public static NumberAtom equal(List<NumberAtom> atoms) {
 		boolean floatornot = false;
 		for(NumberAtom a : atoms) {
-			if(a.type == NumberType.FLOAT) {
+			if(a.type == NumberAtom.Type.FLOAT) {
 				floatornot = true;
 				break;
 			}
 		}
 		if(floatornot) {
 			double mainValue = 0;
-			if(atoms.get(0).type == NumberType.FLOAT) {
+			if(atoms.get(0).type == NumberAtom.Type.FLOAT) {
 				mainValue = Double.longBitsToDouble(atoms.get(0).rawData);
 			}else {
 				mainValue = atoms.get(0).rawData;
 			}
 			boolean yes = true;
 			for(int i = 1; i < atoms.size(); i++) {
-				if(atoms.get(i).type == NumberType.FLOAT) {
+				if(atoms.get(i).type == NumberAtom.Type.FLOAT) {
 					yes = mainValue == Double.longBitsToDouble(atoms.get(i).rawData);
 				}else {
 					yes = mainValue == atoms.get(i).rawData;
