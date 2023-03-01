@@ -1,6 +1,5 @@
 package skinnylisp.parser.atoms;
 
-import skinnylisp.OutC;
 import skinnylisp.lexer.atoms.Atom;
 import skinnylisp.parser.atoms.numtypes.NumberType;
 

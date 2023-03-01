@@ -1,10 +1,7 @@
 package skinnylisp.lexer;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-
-import skinnylisp.OutC;
 
 public class SlicerUpper {
 	public static int rejoinCalls = 0;
@@ -58,7 +55,6 @@ public class SlicerUpper {
 		command = command.trim();
 		command += " ";
 		List<String> atoms = new LinkedList<String>();
-		String atom = "";
 		
 		int i = 0;
 		int atomstart = 0;

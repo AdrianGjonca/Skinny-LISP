@@ -3,8 +3,6 @@ package skinnylisp.precompiler;
 import java.util.LinkedList;
 import java.util.List;
 
-import skinnylisp.OutC;
-
 public class Precompiler {
 	public static String precomp(String unprocessed) {
 		return precomp_EX(
@@ -41,7 +39,6 @@ public class Precompiler {
 								break;
 							}
 							if(toBracket.charAt(r) == '"') {
-								int a = r;
 								r++;
 								while(toBracket.charAt(r) != '"') {
 									r++;
@@ -54,7 +51,6 @@ public class Precompiler {
 							}
 							if(toBracket.charAt(r) == '(') {
 								int _level = 1;
-								int a = r;
 								r++;
 								while(_level > 0) {
 									if(toBracket.charAt(r) == '(') _level++;

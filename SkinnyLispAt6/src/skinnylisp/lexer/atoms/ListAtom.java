@@ -1,10 +1,8 @@
 package skinnylisp.lexer.atoms;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import skinnylisp.OutC;
 import skinnylisp.exceptions.CodeInvalidEx;
 import skinnylisp.lexer.SlicerUpper;
 

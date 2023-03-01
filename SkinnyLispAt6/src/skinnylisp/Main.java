@@ -1,23 +1,16 @@
 package skinnylisp;
 
-import java.io.Console;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
-import java.util.function.Function;
 
-import skinnylisp.engine.Interpreter;
 import skinnylisp.entrypoints.REPL;
-import skinnylisp.exceptions.CodeInvalidEx;
-import skinnylisp.lexer.atoms.Atom;
-import skinnylisp.lexer.atoms.ListAtom;
-import skinnylisp.parser.Parser;
 import skinnylisp.precompiler.Precompiler;
 
 public class Main {
 	
 	public static void main(String [] args) {
-		repl();
+		loadFile();
 	}
 	
 	public static void precompDebug() {
@@ -28,7 +21,8 @@ public class Main {
 			input = scan.nextLine();
 			String out = Precompiler.precomp(input);
 			System.out.println("£"+out);
-		} // (set $myFunc | lambda (/n) | do (return | add /n 5))
+		}
+		scan.close();
 	}
 	
 	public static void loadFile() {

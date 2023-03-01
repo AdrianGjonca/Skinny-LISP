@@ -3,7 +3,6 @@ package skinnylisp.engine;
 import java.util.LinkedList;
 import java.util.List;
 
-import skinnylisp.engine.lists.ListType;
 import skinnylisp.exceptions.LispRuntimeError;
 import skinnylisp.lexer.atoms.Atom;
 import skinnylisp.lexer.atoms.ListAtom;
@@ -24,11 +23,11 @@ public class LambdaAtom extends Atom {
 		List<LispType> typeon = new LinkedList<LispType>();
 		boolean finnished = false;
 		for(Atom n : vars.nodes) {
-			if(finnished) {
-				typeon = new LinkedList<LispType>();
-				finnished = false;
-			}
 			if(n instanceof KeywordAtom) {
+				if(finnished) {
+					typeon = new LinkedList<LispType>();
+					finnished = false;
+				}
 				String name = ((KeywordAtom) n).keyword;
 				boolean success = false;
 				for(LispType r : LispType.values()) {

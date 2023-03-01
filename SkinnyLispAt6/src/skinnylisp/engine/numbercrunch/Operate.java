@@ -2,7 +2,6 @@ package skinnylisp.engine.numbercrunch;
 
 import java.util.List;
 
-import skinnylisp.OutC;
 import skinnylisp.parser.atoms.NumberAtom;
 import skinnylisp.parser.atoms.numtypes.NumberType;
 
